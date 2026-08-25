@@ -6,49 +6,83 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v1.1</title>
+<title>HabitDOS HTML v1.3</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;background:#171717;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-body{min-height:100vh;padding-bottom:72px}main{max-width:720px;margin:auto;padding:16px}
-.brand{font-size:14px;font-weight:800}h1{font-size:23px;margin:5px 0}.sub,small,.meta,.hint{font-size:10px;color:#999}
-hr{border:0;border-top:1px solid #666;margin:10px 0 14px}
-.summary{display:flex;justify-content:space-between;align-items:center;background:#252525;border:1px solid #666;padding:12px;margin:0 0 12px}
-.summary div{display:flex;flex-direction:column;gap:4px}.summary strong{font-size:19px}
-.card{width:100%;display:block;text-align:left;background:#252525;color:#e6e6e6;border:1px solid #666;padding:12px;margin:0 0 10px}
-.card:disabled{opacity:.55}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.check{font-size:18px}.box{display:inline-block;width:19px;height:19px;border:1px solid #777}.na{color:#777}
-.meta{display:flex;justify-content:space-between;margin-top:8px}
-.wide{width:100%;min-height:44px;background:#171717;color:#e6e6e6;border:1px solid #777;padding:10px;margin-top:4px}
-.secondary{margin-top:9px}.file{display:block;text-align:center}.file input{display:none}
-nav{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#171717;border-top:1px solid #666;display:flex;padding:7px max(7px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom))}
-nav button{flex:1;background:none;border:0;color:#999;padding:10px 2px;font:inherit;font-size:10px}nav button.sel{color:#fff;font-weight:800}
-.table{overflow:auto}.wh,.wr{display:grid;grid-template-columns:120px repeat(7,42px);align-items:center;min-width:414px}
-.wh{font-size:9px;color:#999;margin-bottom:5px}.wr{border-bottom:1px solid #444;padding:9px 0}.wr>span{text-align:center}
-.wr div{display:flex;flex-direction:column;gap:4px}.monthnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.monthnav button{font-size:28px;color:#fff;background:none;border:0;padding:0 15px}.hint{line-height:1.5;margin-top:14px}
-.modal{position:fixed;inset:0;background:#000b;z-index:30;display:flex;align-items:flex-end}
-.dialog{width:100%;max-width:620px;margin:auto;background:#171717;border:1px solid #777;padding:18px;max-height:92vh;overflow:auto}
-.top{display:flex;justify-content:space-between;margin-bottom:18px}.dialog label{display:block;font-size:10px;color:#999;margin:12px 0}
-.dialog input{display:block;width:100%;margin-top:7px;background:#252525;border:1px solid #777;color:#fff;padding:11px;font:inherit}
-.label{font-size:10px;color:#999;margin:15px 0 7px}.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.seg button,.days button{background:#171717;color:#ddd;border:1px solid #666;padding:10px;font:inherit;font-size:9px}
-.seg button.sel,.days button.sel{font-weight:800}.counter{display:flex;justify-content:space-between;align-items:center;border:1px solid #666;padding:8px}
-.counter button{background:none;border:0;color:#fff;font-size:22px;padding:0 18px}.days{border:1px solid #666}.days button{width:100%;text-align:left;border:0;border-bottom:1px solid #444}
-.days button:last-child{border:0}.danger{margin-top:9px}
-.matrix{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.quad{background:#252525;border:1px solid #666;padding:10px;min-height:96px}
-.qh{display:flex;flex-direction:column;gap:2px;margin-bottom:8px;border-bottom:1px solid #444;padding-bottom:6px}
-.qh b{font-size:10px;line-height:1.3}.qh small{font-size:9px;color:#999}
-.todo-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #333}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#171717;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;line-height:1.5}
+body{min-height:100vh;padding-bottom:84px}main{max-width:640px;margin:auto;padding:22px 18px}
+.brand{font-size:12px;font-weight:800;letter-spacing:.2em;color:#999}
+h1{font-size:15px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:11px 0 6px;display:flex;align-items:center;gap:7px}
+h1 .prompt{color:#666;font-weight:400}
+.cursor{display:inline-block;width:8px;height:15px;background:#e6e6e6;animation:blink 1.1s steps(1) infinite;vertical-align:-3px}
+@keyframes blink{50%{opacity:0}}
+.sub{font-size:12px;color:#999;letter-spacing:.02em}
+small,.hint{font-size:11px;color:#999;letter-spacing:.02em}
+hr{border:0;border-top:1px solid #555;margin:16px 0 20px}
+.hero{background:#1e1e1e;border:1px solid #5a5a5a;border-top:3px solid #e6e6e6;padding:24px 20px;margin:0 0 20px}
+.hero-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.hero-top small{letter-spacing:.16em;font-size:11px}
+.hero-pct{font-size:58px;font-weight:800;line-height:.9;letter-spacing:-.02em}
+.hero-bar{font-size:17px;letter-spacing:1px;line-height:1;margin-bottom:12px;word-break:break-all;color:#ddd}
+.hero-sub{letter-spacing:.03em;font-size:12px}
+.card{width:100%;display:block;text-align:left;background:#252525;color:#e6e6e6;border:1px solid #5a5a5a;padding:18px;margin:0 0 14px;transition:background .1s}
+.card:active{background:#2d2d2d}
+.card:disabled{opacity:.5}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.row b{font-size:17px;font-weight:700;letter-spacing:0}
+.chk{font-size:18px;font-weight:800;letter-spacing:1px;padding:2px 0}
+.chk.na{color:#777;font-weight:400}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:12px;font-size:12px;color:#a3a3a3}
+.mbar{letter-spacing:1px;color:#c9c9c9;font-size:13px}
+.wide{width:100%;min-height:54px;background:#171717;color:#e6e6e6;border:1px solid #777;padding:12px;margin-top:8px;font-weight:800;letter-spacing:.06em;font-size:12px;text-transform:uppercase;transition:background .1s}
+.wide:active{background:#232323}
+.secondary{margin-top:12px;font-weight:400;letter-spacing:.02em}
+.file{display:block;text-align:center}.file input{display:none}
+nav{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#171717;border-top:1px solid #555;display:flex;padding:10px max(6px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;border:0;color:#999;padding:12px 2px;font:inherit;font-size:10.5px;letter-spacing:.05em;border-radius:2px;transition:background .1s}
+nav button.sel{color:#fff;font-weight:800;background:#252525}
+nav button.sel::before{content:"> "}
+nav button:active{background:#2a2a2a}
+.table{overflow:auto}.wh,.wr{display:grid;grid-template-columns:112px repeat(7,40px);align-items:center;min-width:392px}
+.wh{font-size:9.5px;color:#999;margin-bottom:8px;letter-spacing:.06em}.wr{border-bottom:1px solid #3d3d3d;padding:13px 0}.wr>span{text-align:center;font-size:15px}
+.wr div{display:flex;flex-direction:column;gap:4px}.wr b{font-size:13px}
+.monthnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.monthnav button{font-size:30px;color:#fff;background:none;border:0;padding:6px 18px}
+.monthnav b{font-size:14px;letter-spacing:.04em}
+.hint{line-height:1.6;margin-top:18px}
+.modal{position:fixed;inset:0;background:#000c;z-index:30;display:flex;align-items:flex-end}
+.dialog{width:100%;max-width:620px;margin:auto;background:#171717;border:1px solid #666;border-top:3px solid #e6e6e6;padding:22px 20px;max-height:92vh;overflow:auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.top b{font-size:14px;letter-spacing:.08em}
+.top button{color:#999;font-size:11px;letter-spacing:.04em;background:none;border:1px solid #555;padding:8px 12px}
+.dialog label{display:block;font-size:11px;color:#999;margin:16px 0;letter-spacing:.04em}
+.dialog input{display:block;width:100%;margin-top:9px;background:#252525;border:1px solid #666;color:#fff;padding:14px;font:inherit;font-size:16px}
+.label{font-size:11px;color:#999;margin:18px 0 9px;letter-spacing:.05em}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.seg button,.days button{background:#1c1c1c;color:#ddd;border:1px solid #5a5a5a;padding:13px 6px;font:inherit;font-size:10px;letter-spacing:.02em;min-height:46px}
+.seg button.sel,.days button.sel{font-weight:800;border-color:#e6e6e6;background:#252525}
+.counter{display:flex;justify-content:space-between;align-items:center;border:1px solid #5a5a5a;padding:6px}
+.counter button{background:none;border:0;color:#fff;font-size:26px;padding:6px 22px}
+.counter b{font-size:15px}
+.days{border:1px solid #5a5a5a}
+.days button{width:100%;text-align:left;border:0;border-bottom:1px solid #3d3d3d;padding:14px 12px;font-size:11px}
+.days button:last-child{border:0}
+.danger{margin-top:12px;color:#e6a5a5;border-color:#6b3f3f}
+.matrix{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:16px}
+.quad{background:#252525;border:1px solid #5a5a5a;padding:13px}
+.qh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px;border-bottom:1px solid #3d3d3d;padding-bottom:9px;gap:6px}
+.qh b{font-size:10px;letter-spacing:.03em;line-height:1.4}
+.qh small{letter-spacing:0;font-size:10px;white-space:nowrap}
+.todo-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #333}
 .todo-item:last-child{border:0}
 .todo-item.done .ttext{color:#777;text-decoration:line-through}
-.tbox{background:none;border:0;padding:0;color:#fff;line-height:0;margin-top:1px}
-.ttext{flex:1;font-size:11px;line-height:1.4;word-break:break-word}
-.tdel{background:none;border:0;color:#999;font-size:15px;padding:0 2px;line-height:1}
-.qempty{font-size:10px;color:#555}
-.seg2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.seg2 button{background:#171717;color:#ddd;border:1px solid #666;padding:10px;font:inherit;font-size:9px;text-align:left;line-height:1.3}
-.seg2 button.sel{font-weight:800;border-color:#fff}
+.tbox{background:none;border:0;padding:6px 6px 6px 0;margin:-6px 0 -6px -2px;color:#fff;line-height:1;font-size:14px;font-weight:800}
+.ttext{flex:1;font-size:12.5px;line-height:1.5;word-break:break-word;padding-top:3px}
+.tdel{background:none;border:0;color:#999;font-size:19px;padding:4px 4px;margin:-4px -6px -4px 0;line-height:1}
+.qempty{font-size:11px;color:#555}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.seg2 button{background:#1c1c1c;color:#ddd;border:1px solid #5a5a5a;padding:13px 10px;font:inherit;font-size:10px;text-align:left;line-height:1.4;letter-spacing:.01em;min-height:46px}
+.seg2 button.sel{font-weight:800;border-color:#e6e6e6;background:#252525}
 </style>
 </head>
 <body>
@@ -65,6 +99,7 @@ const add=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+n);return day(x)};
 const mon=d=>{let x=day(d),n=(x.getDay()+6)%7;x.setDate(x.getDate()-n);return x};
 const today=()=>day(new Date()),weekdays=["SO","MO","DI","MI","DO","FR","SA"];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function bar(done,target,w=14){if(!target)return"·".repeat(w);let f=Math.max(0,Math.min(w,Math.round((done/target)*w)));return"▓".repeat(f)+"░".repeat(w-f)}
 let habits=getStore(HKEY,null)||[
 {id:uid(),name:"Lesen",freq:{type:"daily"},arch:false},
 {id:uid(),name:"Sport",freq:{type:"times",count:3},arch:false},
@@ -80,19 +115,19 @@ function toggle(h,d=today()){if(!due(h,d))return;let i=records.findIndex(r=>r.h=
 function week(d){let m=mon(d);return Array.from({length:7},(_,i)=>add(m,i))}
 function prog(h,d=today()){let ds=week(d),f=h.freq;if(f.type==="times"){let n=ds.filter(x=>done(h,x)).length;return{done:Math.min(n,f.count),target:f.count}}let dueDays=f.type==="daily"?ds:ds.filter(x=>f.days.includes(x.getDay()+1));return{done:dueDays.filter(x=>done(h,x)).length,target:dueDays.length}}
 function total(ps){let a=ps.reduce((s,x)=>s+x.done,0),b=ps.reduce((s,x)=>s+x.target,0);return{done:a,target:b,p:b?Math.round(a/b*100):0}}
-function mark(h,d){if(done(h,d))return'<b class="check">X</b>';if(!due(h,d))return'<span class="na">–</span>';return'<span class="box"></span>'}
-function header(t,s=""){return`<header><div class="brand">HABITDOS</div><h1>${t}</h1>${s?`<div class="sub">${esc(s)}</div>`:""}<hr></header>`}
-function summary(x,l="WEEK"){return`<div class="summary"><div><small>${l}</small><strong>${x.done} / ${x.target}</strong></div><strong>${x.p}%</strong></div>`}
-function todayView(){return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${summary(total(active().map(h=>prog(h))))}${active().map(h=>{let p=prog(h);return`<button class="card habit" onclick="toggleById('${h.id}')" ${due(h,today())?"":"disabled"}><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta">${ftxt(h)}<span>${p.done}/${p.target}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`}
+function mark(h,d){if(done(h,d))return'<span class="chk">[X]</span>';if(!due(h,d))return'<span class="chk na">[–]</span>';return'<span class="chk">[ ]</span>'}
+function header(t,s=""){return`<header><div class="brand">HABITDOS</div><h1><span class="prompt">&gt;</span>${t}<span class="cursor"></span></h1>${s?`<div class="sub">${esc(s)}</div>`:""}<hr></header>`}
+function summary(x,l="WEEK"){return`<div class="hero"><div class="hero-top"><small>${l}</small><span class="hero-pct">${x.p}%</span></div><div class="hero-bar">${bar(x.done,x.target,20)}</div><div class="hero-sub">${x.done} / ${x.target} erledigt</div></div>`}
+function todayView(){return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${summary(total(active().map(h=>prog(h))))}${active().map(h=>{let p=prog(h);return`<button class="card habit" onclick="toggleById('${h.id}')" ${due(h,today())?"":"disabled"}><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${ftxt(h)}</span><span>${p.done}/${p.target}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`}
 function weekView(){let ds=week(today());return`<main>${header("WEEK",`${ds[0].toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${ds[6].toLocaleDateString("de-DE",{day:"numeric",month:"short",year:"numeric"})}`)}${summary(total(active().map(h=>prog(h))))}<div class="table"><div class="wh"><span>HABIT</span>${ds.map(d=>`<span>${weekdays[d.getDay()]}<br>${d.getDate()}</span>`).join("")}</div>${active().map(h=>{let p=prog(h);return`<div class="wr"><div><b>${esc(h.name)}</b><small>${p.done}/${p.target}</small></div>${ds.map(d=>`<span>${mark(h,d)}</span>`).join("")}</div>`}).join("")}</div><div class="hint">WEEK ist eine reine Übersicht. Abhaken erfolgt in TODAY.</div></main>`}
 function monthDays(m){let n=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();return Array.from({length:n},(_,i)=>new Date(m.getFullYear(),m.getMonth(),i+1))}
 function monthProg(h,m){let ds=monthDays(m),f=h.freq;if(f.type==="times"){let first=new Date(m.getFullYear(),m.getMonth(),1),last=new Date(m.getFullYear(),m.getMonth()+1,0),fm=mon(first),lm=mon(last),target=0,doneN=0;for(let w=new Date(fm);w<=lm;w=add(w,7)){if(w.getMonth()!=m.getMonth()||w.getFullYear()!=m.getFullYear())continue;let n=week(w).filter(d=>done(h,d)).length;target+=f.count;doneN+=Math.min(f.count,n)}return{done:doneN,target,p:target?Math.round(doneN/target*100):0}}let dueDays=f.type==="daily"?ds:ds.filter(d=>f.days.includes(d.getDay()+1)),dn=dueDays.filter(d=>done(h,d)).length;return{done:dn,target:dueDays.length,p:dueDays.length?Math.round(dn/dueDays.length*100):0}}
-function monthView(){let ps=active().map(h=>monthProg(h,month));return`<main>${header("MONTH")}<div class="monthnav"><button onclick="changeMonth(-1)">‹</button><b>${month.toLocaleDateString("de-DE",{month:"long",year:"numeric"})}</b><button onclick="changeMonth(1)">›</button></div>${summary(total(ps),"MONTH")}${active().map(h=>{let p=monthProg(h,month);return`<div class="summary"><span>${esc(h.name)}</span><span>${p.done}/${p.target}</span><span>${p.p}%</span></div>`}).join("")}<div class="hint">MONATSANSICHT B · FLEXIBLE HABITS werden nach Montag-basierten Wochen bewertet. Änderungen werden lokal auf diesem Gerät gespeichert.</div></main>`}
-function habitsView(){return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>`<button class="card habit" onclick="editor('${h.id}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta">${ftxt(h)}</div></button>`).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v1.1 · OFFLINE · WEEK bleibt reine Übersicht.</div></main>`}
+function monthView(){let ps=active().map(h=>monthProg(h,month));return`<main>${header("MONTH")}<div class="monthnav"><button onclick="changeMonth(-1)">‹</button><b>${month.toLocaleDateString("de-DE",{month:"long",year:"numeric"})}</b><button onclick="changeMonth(1)">›</button></div>${summary(total(ps),"MONTH")}${active().map(h=>{let p=monthProg(h,month);return`<div class="card"><div class="row"><b>${esc(h.name)}</b><span>${p.p}%</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,14)}</span><span>${p.done}/${p.target}</span></div></div>`}).join("")}<div class="hint">MONATSANSICHT · FLEXIBLE HABITS werden nach Montag-basierten Wochen bewertet. Änderungen werden lokal auf diesem Gerät gespeichert.</div></main>`}
+function habitsView(){return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>`<button class="card habit" onclick="editor('${h.id}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span></div></button>`).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v1.3 · OFFLINE · WEEK bleibt reine Übersicht.</div></main>`}
 function qlabel(q){return{1:"WICHTIG · DRINGEND",2:"WICHTIG · NICHT DRINGEND",3:"DRINGEND · NICHT WICHTIG",4:"WEDER NOCH"}[q]}
-function qhint(q){return{1:"SOFORT ERLEDIGEN",2:"EINPLANEN",3:"DELEGIEREN",4:"STREICHEN"}[q]}
-function quadrant(q){let items=todos.filter(t=>t.q===q).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);return`<div class="quad"><div class="qh"><b>${qlabel(q)}</b><small>${qhint(q)}</small></div>${items.length?items.map(t=>`<div class="todo-item ${t.done?"done":""}"><button class="tbox" onclick="toggleTodo('${t.id}')">${t.done?'<b class="check">X</b>':'<span class="box"></span>'}</button><span class="ttext">${esc(t.text)}</span><button class="tdel" onclick="delTodo('${t.id}')">×</button></div>`).join(""):'<div class="qempty">–</div>'}</div>`}
-function todoView(){let open=todos.filter(t=>!t.done).length,doneN=todos.filter(t=>t.done).length;return`<main>${header("TODO","Eisenhower-Matrix · einmalige Aufgaben")}<div class="summary"><div><small>OFFEN</small><strong>${open}</strong></div><strong>${doneN} erledigt</strong></div><div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div><button class="wide" onclick="todoEditor()">+ AUFGABE HINZUFÜGEN</button><div class="hint">Aufgaben wiederholen sich nicht und laufen nicht ab. Für wiederkehrende Routinen siehe HABITS.</div></main>`}
+function qhint(q){return{1:"SOFORT",2:"PLANEN",3:"DELEGIEREN",4:"STREICHEN"}[q]}
+function quadrant(q){let items=todos.filter(t=>t.q===q).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);return`<div class="quad"><div class="qh"><b>${qlabel(q)}</b><small>${qhint(q)} · ${items.length}</small></div>${items.length?items.map(t=>`<div class="todo-item ${t.done?"done":""}"><button class="tbox" onclick="toggleTodo('${t.id}')">${t.done?"[X]":"[ ]"}</button><span class="ttext">${esc(t.text)}</span><button class="tdel" onclick="delTodo('${t.id}')">×</button></div>`).join(""):'<div class="qempty">–</div>'}</div>`}
+function todoView(){let open=todos.filter(t=>!t.done).length,doneN=todos.filter(t=>t.done).length,tt=open+doneN;return`<main>${header("TODO","Eisenhower-Matrix · einmalige Aufgaben")}<div class="hero"><div class="hero-top"><small>OFFEN</small><span class="hero-pct">${open}</span></div><div class="hero-bar">${bar(doneN,tt||1,20)}</div><div class="hero-sub">${doneN} von ${tt} erledigt</div></div><div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div><button class="wide" onclick="todoEditor()">+ AUFGABE HINZUFÜGEN</button><div class="hint">Aufgaben wiederholen sich nicht und laufen nicht ab. Für wiederkehrende Routinen siehe HABITS.</div></main>`}
 function tabs(){return`<nav>${[["today","TODAY"],["todo","TODO"],["week","WEEK"],["month","MONTH"],["habits","HABITS"]].map(x=>`<button class="${tab===x[0]?"sel":""}" onclick="setTab('${x[0]}')">${x[1]}</button>`).join("")}</nav>`}
 function render(){document.body.innerHTML=(tab==="today"?todayView():tab==="todo"?todoView():tab==="week"?weekView():tab==="month"?monthView():habitsView())+tabs()}
 function setTab(x){tab=x;render()}function toggleById(id,date){let h=habits.find(x=>x.id===id);if(h)toggle(h,date?parse(date):today())}
@@ -109,7 +144,7 @@ function chooseQ(q){editorQ=q;[1,2,3,4].forEach(x=>$("#q-"+x).classList.toggle("
 function saveTodoEditor(){let text=$("#tt").value.trim();if(!text)return;todos.push({id:uid(),text,q:editorQ,done:false,created:new Date().toISOString()});save();document.querySelector(".modal")?.remove();render()}
 function toggleTodo(id){let t=todos.find(x=>x.id===id);if(t){t.done=!t.done;save();render()}}
 function delTodo(id){todos=todos.filter(x=>x.id!==id);save();render()}
-async function backup(){let data=JSON.stringify({app:"HabitDOS",version:"1.1",exported:new Date().toISOString(),habits,records,todos},null,2);try{let file=new File([data],"HabitDOS-Backup.json",{type:"application/json"});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:"HabitDOS Backup",files:[file]});return}catch(e){}}}catch(e){}try{let blob=new Blob([data],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="HabitDOS-Backup.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}catch(e){location.href="data:application/json;charset=utf-8,"+encodeURIComponent(data)}}
+async function backup(){let data=JSON.stringify({app:"HabitDOS",version:"1.3",exported:new Date().toISOString(),habits,records,todos},null,2);try{let file=new File([data],"HabitDOS-Backup.json",{type:"application/json"});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:"HabitDOS Backup",files:[file]});return}catch(e){}}}catch(e){}try{let blob=new Blob([data],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="HabitDOS-Backup.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}catch(e){location.href="data:application/json;charset=utf-8,"+encodeURIComponent(data)}}
 function resetData(){if(!confirm("Alle HabitDOS-Daten auf diesem Gerät löschen?"))return;habits=[];records=[];todos=[];save();render()}
 function restore(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.habits)||!Array.isArray(x.records))throw 0;habits=x.habits;records=x.records;todos=Array.isArray(x.todos)?x.todos:[];save();render();alert("HabitDOS-Daten wurden importiert.")}catch(err){alert("Ungültige HabitDOS-Backup-Datei.")}};r.readAsText(file)}
 save();render();
