@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v1.3</title>
+<title>HabitDOS HTML v1.6</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:#171717;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;line-height:1.5}
@@ -19,12 +19,16 @@ h1 .prompt{color:#666;font-weight:400}
 .sub{font-size:12px;color:#999;letter-spacing:.02em}
 small,.hint{font-size:11px;color:#999;letter-spacing:.02em}
 hr{border:0;border-top:1px solid #555;margin:16px 0 20px}
-.hero{background:#1e1e1e;border:1px solid #5a5a5a;border-top:3px solid #e6e6e6;padding:24px 20px;margin:0 0 20px}
+.hero{background:#1e1e1e;border:1px solid #5a5a5a;border-top:3px solid #e6e6e6;padding:24px 20px;margin:0 0 18px}
 .hero-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
 .hero-top small{letter-spacing:.16em;font-size:11px}
 .hero-pct{font-size:58px;font-weight:800;line-height:.9;letter-spacing:-.02em}
 .hero-bar{font-size:17px;letter-spacing:1px;line-height:1;margin-bottom:12px;word-break:break-all;color:#ddd}
 .hero-sub{letter-spacing:.03em;font-size:12px}
+.milestone{background:#1e1e1e;border:1px dashed #e6e6e6;padding:13px 14px;margin:0 0 18px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;animation:pulse 1.7s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.sofort{margin:0 0 18px}
+.sofort .qh{margin-bottom:10px}
 .card{width:100%;display:block;text-align:left;background:#252525;color:#e6e6e6;border:1px solid #5a5a5a;padding:18px;margin:0 0 14px;transition:background .1s}
 .card:active{background:#2d2d2d}
 .card:disabled{opacity:.5}
@@ -83,15 +87,159 @@ nav button:active{background:#2a2a2a}
 .seg2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .seg2 button{background:#1c1c1c;color:#ddd;border:1px solid #5a5a5a;padding:13px 10px;font:inherit;font-size:10px;text-align:left;line-height:1.4;letter-spacing:.01em;min-height:46px}
 .seg2 button.sel{font-weight:800;border-color:#e6e6e6;background:#252525}
+
+/* v1.5 history / archive / stats */
+.donegreen{color:#69ff69!important;text-shadow:0 0 7px rgba(105,255,105,.35)}
+.card.archived{border-color:#444;opacity:.92}
+.archive-label{font-size:10px;color:#777;letter-spacing:.12em}
+.history-group{margin:0 0 22px}
+.history-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#202020;border:1px solid #4a4a4a;padding:14px 13px;margin:0 0 8px;text-align:left;width:100%;color:#e6e6e6;font:inherit}
+.history-row:active{background:#292929}
+.history-row b{font-size:12px}
+.history-row small{display:block;margin-top:4px}
+.history-pct{font-size:16px;font-weight:800;white-space:nowrap}
+.section-title{font-size:10px;color:#888;letter-spacing:.16em;margin:22px 0 9px}
+.year-row{display:grid;grid-template-columns:38px 44px 1fr;gap:9px;align-items:center;border-bottom:1px solid #333;padding:10px 0;font-size:11px}
+.year-row .yp{font-weight:800;text-align:right}
+.year-row .yb{font-size:11px;letter-spacing:0}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat{background:#202020;border:1px solid #4a4a4a;padding:13px}
+.stat small{display:block;margin-bottom:6px;letter-spacing:.08em}
+.stat b{font-size:19px}
+.readonly{border-top:1px solid #555;border-bottom:1px solid #555;padding:9px 0;margin:0 0 15px;font-size:10px;letter-spacing:.12em;color:#888}
+.monthnav .back{font-size:11px;padding:8px 10px;color:#999}
+
+
+/* v1.6 UX refinements */
+.nav-more{flex:1;position:relative}
+.nav-more>button{width:100%}
+.nav-pop{position:absolute;bottom:53px;right:4px;background:#171717;border:1px solid #666;min-width:130px;padding:5px;box-shadow:0 0 0 1px #111}
+.nav-pop button{display:block;width:100%;text-align:left;background:#202020;color:#ddd;border:0;padding:11px;font:inherit;font-size:10.5px}
+.nav-pop button.sel{color:#fff;font-weight:800}
+.todayline{display:flex;justify-content:space-between;align-items:center;margin:-5px 0 16px;color:#888;font-size:10px;letter-spacing:.08em}
+.tap-hint{color:#666;font-size:9px;letter-spacing:.05em}
+.archive-current{border-left:3px solid #e6e6e6}
+.detail-card{background:#202020;border:1px solid #4a4a4a;padding:15px;margin-bottom:10px}
+.detail-card .big{font-size:26px;font-weight:800}
+.mini-bar{font-size:12px;letter-spacing:0;margin-top:8px}
+.green{color:#69ff69!important;text-shadow:0 0 7px rgba(105,255,105,.3)}
+
 </style>
 </head>
 <body>
 <script>
-const HKEY="habitdos.v1.habits",RKEY="habitdos.v1.records",TKEY="habitdos.v1.todos",MEM={};
+const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
 const $=s=>document.querySelector(s),pad=n=>String(n).padStart(2,"0");
 function getStore(k,f){try{let v=localStorage.getItem(k);if(v!==null)return JSON.parse(v)}catch(e){}try{let v=sessionStorage.getItem(k);if(v!==null)return JSON.parse(v)}catch(e){}return MEM[k]??f}
 function putStore(k,v){MEM[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 const uid=()=>Date.now()+"-"+Math.random().toString(36).slice(2);
+const APP_VERSION="1.5";
+const cloneFreq=f=>JSON.parse(JSON.stringify(f));
+const isoDate=d=>k(d);
+function freqForDate(h,d){
+  if(h.versions&&h.versions.length){
+    let best=h.versions[0];
+    h.versions.forEach(v=>{if(v.from<=isoDate(d)&&v.from>=best.from)best=v});
+    return best.freq;
+  }
+  return h.freq;
+}
+function dueWithFreq(freq,d){
+  if(freq.type==="daily")return true;
+  if(freq.type==="times")return true;
+  return Array.isArray(freq.days)&&freq.days.includes(d.getDay()+1);
+}
+function isPast(d){return isoDate(d)<isoDate(today())}
+function weekStartKey(d){return isoDate(mon(d))}
+function weekBelongsToMonth(d,m){
+  return mon(d).getMonth()===m.getMonth() && mon(d).getFullYear()===m.getFullYear();
+}
+function monthWeekStarts(m){
+  const first=monthDays(m)[0], last=monthDays(m).at(-1);
+  let out=[], w=mon(first);
+  while(w<=last){
+    if(weekBelongsToMonth(w,m))out.push(new Date(w));
+    w=add(w,7);
+  }
+  return out;
+}
+function weekProgVersioned(h,d){
+  const ds=week(d), groups={};
+  ds.forEach(x=>{
+    const f=freqForDate(h,x), key=JSON.stringify(f);
+    (groups[key]??={freq:f,days:[]}).days.push(x);
+  });
+  let doneN=0,target=0;
+  Object.values(groups).forEach(g=>{
+    if(g.freq.type==="times"){
+      const n=g.days.filter(x=>done(h,x)).length;
+      doneN+=Math.min(n,g.freq.count); target+=g.freq.count;
+    }else{
+      const dueDays=g.freq.type==="daily"?g.days:g.days.filter(x=>dueWithFreq(g.freq,x));
+      doneN+=dueDays.filter(x=>done(h,x)).length; target+=dueDays.length;
+    }
+  });
+  return {done:doneN,target};
+}
+function habitStats(h){
+  const all=records.filter(r=>r.h===h.id&&r.ok).map(r=>parse(r.d)).sort((a,b)=>a-b);
+  let best=0,run=0,prev=null;
+  all.forEach(d=>{
+    if(prev&&k(add(prev,1))===k(d))run++; else run=1;
+    best=Math.max(best,run);prev=d;
+  });
+  let current=0,d=today();
+  while(done(h,d)){current++;d=add(d,-1)}
+  let totalDone=all.length;
+  let targets=0,fulfilled=0;
+  for(let y=all.length?all[0].getFullYear():today().getFullYear(); y<=today().getFullYear(); y++){
+    // Weekly fulfillment is calculated from actual weeks rather than 3/7-style counting.
+    for(let m=0;m<12;m++){
+      const mm=new Date(y,m,1);
+      if(mm>today())continue;
+      monthWeekStarts(mm).forEach(w=>{
+        const p=weekProgVersioned(h,w);
+        targets+=p.target; fulfilled+=p.done;
+      });
+    }
+  }
+  return {current,best,totalDone,p:targets?Math.round(fulfilled/targets*100):0};
+}
+function monthProgVersioned(h,m){
+  let doneN=0,target=0;
+  monthDays(m).forEach(d=>{
+    const f=freqForDate(h,d);
+    if(f.type!=="times"){
+      if(dueWithFreq(f,d)){target++;if(done(h,d))doneN++}
+    }
+  });
+  monthWeekStarts(m).forEach(w=>{
+    const ds=week(w).filter(d=>d.getMonth()===m.getMonth()&&d.getFullYear()===m.getFullYear());
+    const groups={};
+    ds.forEach(x=>{const f=freqForDate(h,x),key=JSON.stringify(f);(groups[key]??={freq:f,days:[]}).days.push(x)});
+    Object.values(groups).forEach(g=>{
+      if(g.freq.type==="times"){
+        target+=g.freq.count;
+        doneN+=Math.min(g.days.filter(x=>done(h,x)).length,g.freq.count);
+      }
+    });
+  });
+  return {done:doneN,target,p:target?Math.round(doneN/target*100):0};
+}
+function monthOverall(m){
+  const ps=active().map(h=>monthProgVersioned(h,m));
+  return total(ps);
+}
+function yearOverall(y){
+  let vals=[];
+  for(let m=0;m<12;m++){
+    const d=new Date(y,m,1);
+    if(d>today())break;
+    vals.push({month:d,p:monthOverall(d)});
+  }
+  return vals;
+}
+
 const day=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
 const k=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const parse=s=>{let [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
@@ -100,51 +248,97 @@ const mon=d=>{let x=day(d),n=(x.getDay()+6)%7;x.setDate(x.getDate()-n);return x}
 const today=()=>day(new Date()),weekdays=["SO","MO","DI","MI","DO","FR","SA"];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function bar(done,target,w=14){if(!target)return"·".repeat(w);let f=Math.max(0,Math.min(w,Math.round((done/target)*w)));return"▓".repeat(f)+"░".repeat(w-f)}
+function msgBanner(t){return`<div class="milestone">*** ${esc(t)} ***</div>`}
+function milestoneBanner(n){const marks=[3,7,14,30,50,100,150,200,365];return marks.includes(n)?msgBanner(`${n} TAGE IN FOLGE KOMPLETT`):""}
 let habits=getStore(HKEY,null)||[
 {id:uid(),name:"Lesen",freq:{type:"daily"},arch:false},
 {id:uid(),name:"Sport",freq:{type:"times",count:3},arch:false},
 {id:uid(),name:"Wasser",freq:{type:"daily"},arch:false},
 {id:uid(),name:"Meditieren",freq:{type:"times",count:3},arch:false}];
-let records=getStore(RKEY,[])||[],todos=getStore(TKEY,[])||[],tab="today",month=new Date(today().getFullYear(),today().getMonth(),1);
+let records=getStore(RKEY,[])||[],todos=getStore(TKEY,[])||[],tab="today",month=new Date(today().getFullYear(),today().getMonth(),1),historyYear=today().getFullYear(),historyMonthDate=new Date(today().getFullYear(),today().getMonth(),1),historyWeekDate=mon(today());
+habits.forEach(h=>{if(!h.versions)h.versions=[{from:"2000-01-01",freq:cloneFreq(h.freq)}]});
 function save(){putStore(HKEY,habits);putStore(RKEY,records);putStore(TKEY,todos)}
 function active(){return habits.filter(h=>!h.arch)}
 function ftxt(h){let f=h.freq;if(f.type==="daily")return"TÄGLICH";if(f.type==="times")return`${f.count}× / WOCHE · FLEXIBEL`;return f.days.map(n=>weekdays[n-1]).join(" · ")}
-function due(h,d){let f=h.freq;return f.type==="daily"||f.type==="times"||f.days.includes(d.getDay()+1)}
+function due(h,d){return dueWithFreq(freqForDate(h,d),d)}
 function done(h,d){return records.some(r=>r.h===h.id&&r.d===k(d)&&r.ok)}
 function toggle(h,d=today()){if(!due(h,d))return;let i=records.findIndex(r=>r.h===h.id&&r.d===k(d));if(i>=0)records[i].ok=!records[i].ok;else records.push({h:h.id,d:k(d),ok:true});save();render()}
 function week(d){let m=mon(d);return Array.from({length:7},(_,i)=>add(m,i))}
-function prog(h,d=today()){let ds=week(d),f=h.freq;if(f.type==="times"){let n=ds.filter(x=>done(h,x)).length;return{done:Math.min(n,f.count),target:f.count}}let dueDays=f.type==="daily"?ds:ds.filter(x=>f.days.includes(x.getDay()+1));return{done:dueDays.filter(x=>done(h,x)).length,target:dueDays.length}}
+function prog(h,d=today()){return weekProgVersioned(h,d)}
 function total(ps){let a=ps.reduce((s,x)=>s+x.done,0),b=ps.reduce((s,x)=>s+x.target,0);return{done:a,target:b,p:b?Math.round(a/b*100):0}}
-function mark(h,d){if(done(h,d))return'<span class="chk">[X]</span>';if(!due(h,d))return'<span class="chk na">[–]</span>';return'<span class="chk">[ ]</span>'}
+function dayComplete(d){let acts=active(),dueH=acts.filter(h=>due(h,d));if(!dueH.length)return false;return dueH.every(h=>done(h,d))}
+function globalStreak(){let n=0,d=today();while(dayComplete(d)){n++;d=add(d,-1)}return n}
+function mark(h,d){if(done(h,d))return'<span class="chk donegreen">[X]</span>';if(!due(h,d))return'<span class="chk na">[–]</span>';return'<span class="chk">[ ]</span>'}
 function header(t,s=""){return`<header><div class="brand">HABITDOS</div><h1><span class="prompt">&gt;</span>${t}<span class="cursor"></span></h1>${s?`<div class="sub">${esc(s)}</div>`:""}<hr></header>`}
 function summary(x,l="WEEK"){return`<div class="hero"><div class="hero-top"><small>${l}</small><span class="hero-pct">${x.p}%</span></div><div class="hero-bar">${bar(x.done,x.target,20)}</div><div class="hero-sub">${x.done} / ${x.target} erledigt</div></div>`}
-function todayView(){return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${summary(total(active().map(h=>prog(h))))}${active().map(h=>{let p=prog(h);return`<button class="card habit" onclick="toggleById('${h.id}')" ${due(h,today())?"":"disabled"}><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${ftxt(h)}</span><span>${p.done}/${p.target}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`}
-function weekView(){let ds=week(today());return`<main>${header("WEEK",`${ds[0].toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${ds[6].toLocaleDateString("de-DE",{day:"numeric",month:"short",year:"numeric"})}`)}${summary(total(active().map(h=>prog(h))))}<div class="table"><div class="wh"><span>HABIT</span>${ds.map(d=>`<span>${weekdays[d.getDay()]}<br>${d.getDate()}</span>`).join("")}</div>${active().map(h=>{let p=prog(h);return`<div class="wr"><div><b>${esc(h.name)}</b><small>${p.done}/${p.target}</small></div>${ds.map(d=>`<span>${mark(h,d)}</span>`).join("")}</div>`}).join("")}</div><div class="hint">WEEK ist eine reine Übersicht. Abhaken erfolgt in TODAY.</div></main>`}
-function monthDays(m){let n=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();return Array.from({length:n},(_,i)=>new Date(m.getFullYear(),m.getMonth(),i+1))}
-function monthProg(h,m){let ds=monthDays(m),f=h.freq;if(f.type==="times"){let first=new Date(m.getFullYear(),m.getMonth(),1),last=new Date(m.getFullYear(),m.getMonth()+1,0),fm=mon(first),lm=mon(last),target=0,doneN=0;for(let w=new Date(fm);w<=lm;w=add(w,7)){if(w.getMonth()!=m.getMonth()||w.getFullYear()!=m.getFullYear())continue;let n=week(w).filter(d=>done(h,d)).length;target+=f.count;doneN+=Math.min(f.count,n)}return{done:doneN,target,p:target?Math.round(doneN/target*100):0}}let dueDays=f.type==="daily"?ds:ds.filter(d=>f.days.includes(d.getDay()+1)),dn=dueDays.filter(d=>done(h,d)).length;return{done:dn,target:dueDays.length,p:dueDays.length?Math.round(dn/dueDays.length*100):0}}
-function monthView(){let ps=active().map(h=>monthProg(h,month));return`<main>${header("MONTH")}<div class="monthnav"><button onclick="changeMonth(-1)">‹</button><b>${month.toLocaleDateString("de-DE",{month:"long",year:"numeric"})}</b><button onclick="changeMonth(1)">›</button></div>${summary(total(ps),"MONTH")}${active().map(h=>{let p=monthProg(h,month);return`<div class="card"><div class="row"><b>${esc(h.name)}</b><span>${p.p}%</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,14)}</span><span>${p.done}/${p.target}</span></div></div>`}).join("")}<div class="hint">MONATSANSICHT · FLEXIBLE HABITS werden nach Montag-basierten Wochen bewertet. Änderungen werden lokal auf diesem Gerät gespeichert.</div></main>`}
-function habitsView(){return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>`<button class="card habit" onclick="editor('${h.id}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span></div></button>`).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v1.3 · OFFLINE · WEEK bleibt reine Übersicht.</div></main>`}
 function qlabel(q){return{1:"WICHTIG · DRINGEND",2:"WICHTIG · NICHT DRINGEND",3:"DRINGEND · NICHT WICHTIG",4:"WEDER NOCH"}[q]}
 function qhint(q){return{1:"SOFORT",2:"PLANEN",3:"DELEGIEREN",4:"STREICHEN"}[q]}
+function sofortSection(){let items=todos.filter(t=>t.q===1&&!t.done);if(!items.length)return"";return`<div class="quad sofort"><div class="qh"><b>SOFORT · WICHTIG &amp; DRINGEND</b><small>${items.length}</small></div>${items.map(t=>`<div class="todo-item"><button class="tbox" onclick="toggleTodo('${t.id}')">[ ]</button><span class="ttext">${esc(t.text)}</span></div>`).join("")}</div>`}
+function todayView(){let x=total(active().map(h=>prog(h))),streak=globalStreak();return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}<div class="hero"><div class="hero-top"><small>TODAY</small><span class="hero-pct">${x.p}%</span></div><div class="hero-bar">${bar(x.done,x.target,20)}</div><div class="hero-sub">${x.done} / ${x.target} erledigt${streak>=2?` · Serie: ${streak} Tage`:""}</div></div>${milestoneBanner(streak)}${sofortSection()}${active().map(h=>{let p=prog(h);return`<button class="card habit" onclick="toggleById('${h.id}')" ${due(h,today())?"":"disabled"}><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${ftxt(h)}</span><span>${p.done}/${p.target}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`}
+function weekView(){let ds=week(today()),x=total(active().map(h=>prog(h)));return`<main>${header("WEEK",`${ds[0].toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${ds[6].toLocaleDateString("de-DE",{day:"numeric",month:"short",year:"numeric"})}`)}${summary(x)}${x.p===100?msgBanner("WOCHE 100% GESCHAFFT"):""}<div class="table"><div class="wh"><span>HABIT</span>${ds.map(d=>`<span>${weekdays[d.getDay()]}<br>${d.getDate()}</span>`).join("")}</div>${active().map(h=>{let p=prog(h);return`<div class="wr"><div><b>${esc(h.name)}</b><small>${p.done}/${p.target}</small></div>${ds.map(d=>`<span>${mark(h,d)}</span>`).join("")}</div>`}).join("")}</div><div class="hint">WEEK ist eine reine Übersicht. Abhaken erfolgt in TODAY.</div></main>`}
+function monthDays(m){let n=new Date(m.getFullYear(),m.getMonth()+1,0).getDate();return Array.from({length:n},(_,i)=>new Date(m.getFullYear(),m.getMonth(),i+1))}
+function monthProg(h,m){let ds=monthDays(m),f=h.freq;if(f.type==="times"){let first=new Date(m.getFullYear(),m.getMonth(),1),last=new Date(m.getFullYear(),m.getMonth()+1,0),fm=mon(first),lm=mon(last),target=0,doneN=0;for(let w=new Date(fm);w<=lm;w=add(w,7)){if(w.getMonth()!=m.getMonth()||w.getFullYear()!=m.getFullYear())continue;let n=week(w).filter(d=>done(h,d)).length;target+=f.count;doneN+=Math.min(f.count,n)}return{done:doneN,target,p:target?Math.round(doneN/target*100):0}}let dueDays=f.type==="daily"?ds:ds.filter(d=>f.days.includes(d.getDay()+1)),dn=dueDays.filter(d=>done(h,d)).length;return{done:dn,target:dueDays.length,p:dueDays.length?Math.round(dn/dueDays.length*100):0}}
+function monthView(){let ps=active().map(h=>monthProgVersioned(h,month));return`<main>${header("MONTH")}<div class="monthnav"><button onclick="changeMonth(-1)">‹</button><b>${month.toLocaleDateString("de-DE",{month:"long",year:"numeric"})}${month.getMonth()===today().getMonth()&&month.getFullYear()===today().getFullYear()?" · CURRENT":""}</b><button onclick="changeMonth(1)">›</button></div>${summary(total(ps),"MONTH")}${month.getMonth()!==today().getMonth()||month.getFullYear()!==today().getFullYear()?`<button class="wide secondary" onclick="month=new Date(today().getFullYear(),today().getMonth(),1);render()">CURRENT MONTH</button>`:""}${active().map(h=>{let p=monthProg(h,month);return`<div class="card"><div class="row"><b>${esc(h.name)}</b><span>${p.p}%</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,14)}</span><span>${p.done}/${p.target}</span></div></div>`}).join("")}<div class="hint">MONATSANSICHT · FLEXIBLE HABITS werden nach Montag-basierten Wochen bewertet. Änderungen werden lokal auf diesem Gerät gespeichert.</div></main>`}
+
+function archivedWeekView(start){
+  const ds=week(start), ps=active().map(h=>weekProgVersioned(h,start)), x=total(ps);
+  return `<main>${header("WEEK · ARCHIVE",`${ds[0].toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${ds[6].toLocaleDateString("de-DE",{day:"numeric",month:"short",year:"numeric"})}`)}<div class="readonly">READ ONLY · VERGANGENE WOCHE</div>${summary(x,"WEEK · ARCHIVE")}<div class="table"><div class="wh"><span>HABIT</span>${ds.map(d=>`<span>${weekdays[d.getDay()]}<br>${d.getDate()}</span>`).join("")}</div>${active().map(h=>{let p=weekProgVersioned(h,start);return`<div class="wr"><div><b>${esc(h.name)}</b><small>${p.done}/${p.target}</small></div>${ds.map(d=>`<span>${mark(h,d)}</span>`).join("")}</div>`}).join("")}</div><button class="wide" onclick="setTab('history')">‹ HISTORY</button></main>`;
+}
+function archivedMonthView(m){
+  const ps=active().map(h=>monthProgVersioned(h,m)),x=total(ps);
+  return `<main>${header("MONTH · ARCHIVE")}<div class="monthnav"><button onclick="historyMonth(-1)">‹</button><b>${m.toLocaleDateString("de-DE",{month:"long",year:"numeric"})}</b><button onclick="historyMonth(1)">›</button></div><div class="readonly">READ ONLY · MONATLICHES ARCHIV</div>${summary(x,"MONTH · ARCHIVE")}${active().map(h=>{let p=monthProgVersioned(h,m);return`<div class="card"><div class="row"><b>${esc(h.name)}</b><span>${p.p}%</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,14)}</span><span>${p.done}/${p.target}</span></div></div>`}).join("")}<button class="wide" onclick="setTab('history')">‹ HISTORY</button></main>`;
+}
+function historyView(){
+  const y=historyYear, months=yearOverall(y).slice().reverse();
+  return `<main>${header("HISTORY",`Archiv · ${y}`)}<div class="monthnav"><button onclick="historyYearChange(-1)">‹</button><b>${y}</b><button onclick="historyYearChange(1)">›</button></div><div class="section-title">YEAR</div>${months.length?months.map(v=>{let label=v.month.toLocaleDateString("de-DE",{month:"short"}).toUpperCase();return`<button class="history-row" onclick="openHistoryMonth(${v.month.getFullYear()},${v.month.getMonth()})"><span><b>${label}</b><small>${v.p.done} / ${v.p.target}</small></span><span class="history-pct">${v.p.p}%</span></button>`}).join(""):'<div class="hint">NO ARCHIVE</div>'}<div class="section-title">WEEKS</div>${historyWeeks(y).map(w=>`<button class="history-row" onclick="openHistoryWeek('${k(w)}')"><span><b>WEEK ${weekNumber(w)}</b><small>${w.toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${add(w,6).toLocaleDateString("de-DE",{day:"numeric",month:"short"})}</small></span><span class="history-pct">${total(active().map(h=>weekProgVersioned(h,w))).p}%</span></button>`).join("")}<button class="wide" onclick="setTab('today')">TODAY</button></main>`;
+}
+function weekNumber(d){
+  const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  x.setUTCDate(x.getUTCDate()+4-(x.getUTCDay()||7));
+  const y=new Date(Date.UTC(x.getUTCFullYear(),0,1));
+  return Math.ceil((((x-y)/86400000)+1)/7);
+}
+function historyWeeks(y){
+  let out=[];
+  const start=new Date(y,0,1), end=new Date(y,11,31), w=mon(start);
+  for(let d=new Date(w);d<=end;d=add(d,7)){
+    if(d<today() && d.getFullYear()===y && d.getMonth()>=0) out.push(d);
+  }
+  return out.reverse();
+}
+function historyYearChange(n){historyYear=Math.max(2020,Math.min(today().getFullYear(),historyYear+n));render()}
+function historyMonth(n){historyMonthDate=new Date(historyMonthDate.getFullYear(),historyMonthDate.getMonth()+n,1);render()}
+function openHistoryMonth(y,m){historyMonthDate=new Date(y,m,1);tab="historyMonth";render()}
+function openHistoryWeek(s){historyWeekDate=parse(s);tab="historyWeek";render()}
+
+function statsView(){
+  const hs=active().map(h=>({h,s:habitStats(h)}));
+  const allDone=records.filter(r=>r.ok).length;
+  const best=hs.reduce((a,x)=>Math.max(a,x.s.best),0);
+  const avg=hs.length?Math.round(hs.reduce((a,x)=>a+x.s.p,0)/hs.length):0;
+  return `<main>${header("STATS","Gesamtübersicht")}${`<div class="stats-grid">
+    <div class="stat"><small>HABITS</small><b>${hs.length}</b></div>
+    <div class="stat"><small>CHECKS</small><b>${allDone}</b></div>
+    <div class="stat"><small>AVERAGE</small><b>${avg}%</b></div>
+    <div class="stat"><small>BEST STREAK</small><b>${best}</b></div>
+  </div>`}
+  <div class="section-title">HABITS</div>
+  ${hs.map(x=>`<div class="detail-card"><div class="row"><b>${esc(x.h.name)}</b><span class="${x.s.p>=90?"green":""}">${x.s.p}%</span></div><div class="mini-bar">${bar(x.s.p,100,20)}</div><div class="meta"><span>STREAK ${x.s.current}</span><span>BEST ${x.s.best}</span><span>TOTAL ${x.s.totalDone}</span></div></div>`).join("")}
+  <div class="hint">STATISTIKEN basieren auf den lokal gespeicherten Erledigungen. Vergangene Wochen und Monate bleiben unveränderbar.</div>
+  </main>`;
+}
+
+function habitsView(){return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>{let s=habitStats(h);return`<button class="card habit" onclick="editor('${h.id}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span><span>${s.p}%</span><span>STREAK ${s.current}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="showHabitStats()">STATISTIK</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v1.4 · OFFLINE · WEEK bleibt reine Übersicht.</div></main>`}
 function quadrant(q){let items=todos.filter(t=>t.q===q).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);return`<div class="quad"><div class="qh"><b>${qlabel(q)}</b><small>${qhint(q)} · ${items.length}</small></div>${items.length?items.map(t=>`<div class="todo-item ${t.done?"done":""}"><button class="tbox" onclick="toggleTodo('${t.id}')">${t.done?"[X]":"[ ]"}</button><span class="ttext">${esc(t.text)}</span><button class="tdel" onclick="delTodo('${t.id}')">×</button></div>`).join(""):'<div class="qempty">–</div>'}</div>`}
-function todoView(){let open=todos.filter(t=>!t.done).length,doneN=todos.filter(t=>t.done).length,tt=open+doneN;return`<main>${header("TODO","Eisenhower-Matrix · einmalige Aufgaben")}<div class="hero"><div class="hero-top"><small>OFFEN</small><span class="hero-pct">${open}</span></div><div class="hero-bar">${bar(doneN,tt||1,20)}</div><div class="hero-sub">${doneN} von ${tt} erledigt</div></div><div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div><button class="wide" onclick="todoEditor()">+ AUFGABE HINZUFÜGEN</button><div class="hint">Aufgaben wiederholen sich nicht und laufen nicht ab. Für wiederkehrende Routinen siehe HABITS.</div></main>`}
-function tabs(){return`<nav>${[["today","TODAY"],["todo","TODO"],["week","WEEK"],["month","MONTH"],["habits","HABITS"]].map(x=>`<button class="${tab===x[0]?"sel":""}" onclick="setTab('${x[0]}')">${x[1]}</button>`).join("")}</nav>`}
-function render(){document.body.innerHTML=(tab==="today"?todayView():tab==="todo"?todoView():tab==="week"?weekView():tab==="month"?monthView():habitsView())+tabs()}
-function setTab(x){tab=x;render()}function toggleById(id,date){let h=habits.find(x=>x.id===id);if(h)toggle(h,date?parse(date):today())}
-function changeMonth(n){month=new Date(month.getFullYear(),month.getMonth()+n,1);render()}
-let editorType="daily",editorCount=3,editorDays=[];
-function editor(id){let h=id?habits.find(x=>x.id===id):null,f=h?.freq||{type:"daily"};editorType=f.type;editorCount=f.count||3;editorDays=f.days||[];document.body.insertAdjacentHTML("beforeend",`<div class="modal"><div class="dialog"><div class="top"><b>${h?"EDIT HABIT":"NEW HABIT"}</b><button onclick="this.closest('.modal').remove()">SCHLIESSEN</button></div><label>NAME<input id="hn" value="${esc(h?.name||"")}"></label><div class="label">TYP</div><div class="seg">${["daily","times","days"].map(t=>`<button id="t-${t}" class="${editorType==t?"sel":""}" onclick="chooseType('${t}')">${t==="daily"?"TÄGLICH":t==="times"?"FLEXIBEL":"FESTE TAGE"}</button>`).join("")}</div><div id="extra"></div><button class="wide" onclick="saveEditor('${id||""}')">SPEICHERN</button>${h?`<button class="wide danger" onclick="archiveHabit('${id}')">ARCHIVIEREN</button>`:""}</div></div>`);extra()}
-function chooseType(t){editorType=t;["daily","times","days"].forEach(x=>$("#t-"+x).classList.toggle("sel",x===t));extra()}
-function extra(){let e=$("#extra");if(!e)return;if(editorType==="times")e.innerHTML=`<label>ZIEL PRO WOCHE<div class="counter"><button onclick="editorCount=Math.max(1,editorCount-1);extra()">−</button><b>${editorCount}×</b><button onclick="editorCount=Math.min(7,editorCount+1);extra()">+</button></div></label>`;else if(editorType==="days")e.innerHTML=`<div class="days">${weekdays.map((x,i)=>`<button class="${editorDays.includes(i+1)?"sel":""}" onclick="editorDays=editorDays.includes(${i+1})?editorDays.filter(n=>n!==${i+1}):[...editorDays,${i+1}];extra()">${editorDays.includes(i+1)?"[x]":"[ ]"} ${x}</button>`).join("")}</div>`;else e.innerHTML=""}
-function saveEditor(id){let name=$("#hn").value.trim();if(!name)return;let freq=editorType==="daily"?{type:"daily"}:editorType==="times"?{type:"times",count:editorCount}:{type:"weekdays",days:[...editorDays].sort((a,b)=>a-b)};if(freq.type==="weekdays"&&!freq.days.length)return;if(id){let h=habits.find(x=>x.id===id);h.name=name;h.freq=freq}else habits.push({id:uid(),name,freq,arch:false});save();document.querySelector(".modal")?.remove();render()}
-function archiveHabit(id){let h=habits.find(x=>x.id===id);if(h)h.arch=true;save();document.querySelector(".modal")?.remove();render()}
-let editorQ=1;
-function todoEditor(){editorQ=1;document.body.insertAdjacentHTML("beforeend",`<div class="modal"><div class="dialog"><div class="top"><b>NEUE AUFGABE</b><button onclick="this.closest('.modal').remove()">SCHLIESSEN</button></div><label>AUFGABE<input id="tt" placeholder="z.B. Rechnung bezahlen"></label><div class="label">QUADRANT</div><div class="seg2">${[1,2,3,4].map(q=>`<button id="q-${q}" class="${editorQ==q?"sel":""}" onclick="chooseQ(${q})">${qlabel(q)}</button>`).join("")}</div><button class="wide" onclick="saveTodoEditor()">SPEICHERN</button></div></div>`);$("#tt").focus()}
-function chooseQ(q){editorQ=q;[1,2,3,4].forEach(x=>$("#q-"+x).classList.toggle("sel",x===q))}
-function saveTodoEditor(){let text=$("#tt").value.trim();if(!text)return;todos.push({id:uid(),text,q:editorQ,done:false,created:new Date().toISOString()});save();document.querySelector(".modal")?.remove();render()}
-function toggleTodo(id){let t=todos.find(x=>x.id===id);if(t){t.done=!t.done;save();render()}}
-function delTodo(id){todos=todos.filter(x=>x.id!==id);save();render()}
-async function backup(){let data=JSON.stringify({app:"HabitDOS",version:"1.3",exported:new Date().toISOString(),habits,records,todos},null,2);try{let file=new File([data],"HabitDOS-Backup.json",{type:"application/json"});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:"HabitDOS Backup",files:[file]});return}catch(e){}}}catch(e){}try{let blob=new Blob([data],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="HabitDOS-Backup.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}catch(e){location.href="data:application/json;charset=utf-8,"+encodeURIComponent(data)}}
+function todoView(){let open=todos.filter(t=>!t.done).length,doneN=todos.filter(t=>t.done).length,tt=open+doneN;return`<main>${header("TODO","Eisenhower-Matrix · einmalige Aufgaben")}<div class="hero"><div class="hero-top"><small>OFFEN</small><span class="hero-pct">${open}</span></div><div class="hero-bar">${bar(doneN,tt||1,20)}</div><div class="hero-sub">${doneN} von ${tt} erledigt</div></div>${(open===0&&tt>0)?msgBanner("INBOX LEER"):""}<div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div><button class="wide" onclick="todoEditor()">+ AUFGABE HINZUFÜGEN</button><div class="hint">Aufgaben wiederholen sich nicht und laufen nicht ab. Für wiederkehrende Routinen siehe HABITS.</div></main>`}
+function tabs(){
+  const main=[["today","TODAY"],["todo","TODO"],["week","WEEK"],["month","MONTH"]];
+  const more=[["history","HISTORY"],["habits","HABITS"],["stats","STATS"]];
+  const moreSel=more.some(x=>tab===x[0]);
+  return `<nav>${main.map(x=>`<button class="${tab===x[0]?"sel":""}" onclick="setTab('${x[0]}')">${x[1]}</button>`).join("")}<div class="nav-more"><button class="${moreSel?"sel":""}" onclick="toggleMore()">MORE</button>${moreSel||window._moreOpen?`<div class="nav-pop">${more.map(x=>`<button class="${tab===x[0]?"sel":""}" onclick="setTab('${x[0]}');window._moreOpen=false">${x[1]}</button>`).join("")}</div>`:""}</div></nav>`;
+}
+function toggleMore(){window._moreOpen=!window._moreOpen;render()}
+
 function resetData(){if(!confirm("Alle HabitDOS-Daten auf diesem Gerät löschen?"))return;habits=[];records=[];todos=[];save();render()}
 function restore(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.habits)||!Array.isArray(x.records))throw 0;habits=x.habits;records=x.records;todos=Array.isArray(x.todos)?x.todos:[];save();render();alert("HabitDOS-Daten wurden importiert.")}catch(err){alert("Ungültige HabitDOS-Backup-Datei.")}};r.readAsText(file)}
 save();render();
