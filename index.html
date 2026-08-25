@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v1.8</title>
+<title>HabitDOS HTML v1.9</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{background:#0a0a0a;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -217,13 +217,18 @@ nav button:active{color:#888;background:#151515}
 .habit-hist-row .hh-m{color:#999}
 .habit-hist-row .hh-bar{letter-spacing:1px;color:#69ff69;font-size:12px;white-space:nowrap;overflow:hidden}
 .habit-hist-row .hh-p{text-align:right;font-weight:800}
+/* v1.9: flexible habit cards on TODAY read as optional */
+.card.flex{border-style:dashed;border-color:#4a4a4a}
+.card.flex .mbar{color:#888}
+.card.flex.flexdone{border-color:#4ea84e}
+.card.flex.flexdone .mbar{color:#69ff69}
 </style>
 <base target="_blank">
 </head>
 <body>
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   HABITDOS v1.8 — Terminal Habit Tracker
+   HABITDOS v1.9 — Terminal Habit Tracker
    ═══════════════════════════════════════════════════════════════ */
 
 const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
@@ -234,7 +239,7 @@ function getStore(k,f){try{let v=localStorage.getItem(k);if(v!==null)return JSON
 function putStore(k,v){MEM[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
 const uid=()=>Date.now()+"-"+Math.random().toString(36).slice(2);
-const APP_VERSION="1.8";
+const APP_VERSION="1.9";
 const cloneFreq=f=>JSON.parse(JSON.stringify(f));
 const isoDate=d=>k(d);
 
@@ -404,7 +409,9 @@ function total(ps){
   return{done:a,target:b,p:b?Math.round(a/b*100):0};
 }
 function dayComplete(d){
-  let acts=active(),dueH=acts.filter(h=>due(h,d));
+  // v1.9: a day counts as complete when today's obligations (daily / fixed-weekday)
+  // are all done. Flexible weekly-count habits do NOT gate the daily streak.
+  let dueH=active().filter(h=>!isFlexible(h,d)&&due(h,d));
   if(!dueH.length)return false;
   return dueH.every(h=>done(h,d));
 }
@@ -423,6 +430,20 @@ function progLabel(h,p){
   const f=freqForDate(h,today());
   if(f.type==="times")return`${p.done}/${p.target} THIS WEEK`;
   return`${p.done}/${p.target}`;
+}
+
+/* ── v1.9: TODAY = only today's obligations (Option C) ── */
+// A habit is "flexible" if today's active frequency is a weekly-count goal.
+function isFlexible(h,d=today()){return freqForDate(h,d).type==="times";}
+// Obligations = daily + fixed-weekday habits that are actually due today.
+function todayObligations(){return active().filter(h=>!isFlexible(h)&&due(h,today()));}
+// Flexible habits still open this week (shown as optional chips).
+function todayFlexibles(){return active().filter(h=>isFlexible(h));}
+// TODAY percentage counts only today's obligations: each is 1 target, done=1/0.
+function todayProgress(){
+  const obl=todayObligations();
+  const done_=obl.filter(h=>done(h,today())).length;
+  return{done:done_,target:obl.length,p:obl.length?Math.round(done_/obl.length*100):0};
 }
 
 /* ── Prompt-style header ── */
@@ -445,9 +466,26 @@ function sofortSection(){
 }
 
 function todayView(){
-  let x=total(active().map(h=>prog(h))),streak=globalStreak();
-  let streakLine = streak>=2 ? `<div class="sysline">STREAK=<span class="sysvar">${streak}</span> DAYS</div>` : "";
-  return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${streakLine}<div class="hero"><div class="hero-top"><small>TODAY</small><span class="hero-pct">${x.p}%</span></div><div class="hero-bar">${bar(x.done,x.target,20)}</div><div class="hero-sub">${x.done} / ${x.target} erledigt</div></div>${milestoneBanner(streak)}${sofortSection()}${active().map(h=>{let p=prog(h);return`<button class="card habit" onclick="toggleById('${h.id}')" ${due(h,today())?"":"disabled"}><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${ftxt(h)}</span><span>${progLabel(h,p)}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`;
+  const x=todayProgress(),streak=globalStreak();
+  const streakLine = streak>=2 ? `<div class="sysline">STREAK=<span class="sysvar">${streak}</span> DAYS</div>` : "";
+  const obl=todayObligations(), flex=todayFlexibles();
+  // Hero now measures only today's obligations
+  const heroSub = obl.length ? `${x.done} / ${x.target} heute erledigt` : `heute nichts Pflicht`;
+  // Obligation cards
+  const oblCards = obl.length ? obl.map(h=>{
+    return `<button class="card habit" onclick="toggleById('${h.id}')"><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span>${ftxt(h)}</span></div></button>`;
+  }).join("") : `<div class="hint">Heute stehen keine festen Habits an.</div>`;
+  // Flexible block (optional, does not count toward TODAY %)
+  let flexBlock = "";
+  if(flex.length){
+    flexBlock = `<div class="section-title">FLEXIBEL · DIESE WOCHE</div>${flex.map(h=>{
+      const p=weekProgVersioned(h,today());
+      const doneToday=done(h,today());
+      const reached=p.done>=p.target;
+      return `<button class="card habit flex${reached?' flexdone':''}" onclick="toggleById('${h.id}')"><div class="row"><b>${esc(h.name)}</b>${doneToday?'<span class="chk donegreen">[X]</span>':'<span class="chk">[ ]</span>'}</div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${p.done}/${p.target} THIS WEEK${reached?' · ZIEL ERREICHT':''}</span></div></button>`;
+    }).join("")}`;
+  }
+  return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${streakLine}<div class="hero"><div class="hero-top"><small>TODAY</small><span class="hero-pct">${x.p}%</span></div><div class="hero-bar">${bar(x.done,x.target,20)}</div><div class="hero-sub">${heroSub}</div></div>${milestoneBanner(streak)}${sofortSection()}${oblCards}${flexBlock}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`;
 }
 
 function weekStatus(wStart){
