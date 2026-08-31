@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v1.9</title>
+<title>HabitDOS HTML v2.0</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{background:#0a0a0a;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -222,13 +222,22 @@ nav button:active{color:#888;background:#151515}
 .card.flex .mbar{color:#888}
 .card.flex.flexdone{border-color:#4ea84e}
 .card.flex.flexdone .mbar{color:#69ff69}
+/* v2.0: limit habit cards (fewer = better) */
+.seg.seg4{grid-template-columns:repeat(4,1fr)}
+.card.limit{border-color:#4ea84e}
+.card.limit.limitedge{border-color:#c9a94e}
+.card.limit.limitover{border-color:#c85a5a}
+.chk.limitred{color:#ff6b6b}
+.counter.limitctr{margin-top:12px}
+.counter.limitctr button{font-size:28px;min-width:64px}
+.counter.limitctr b{font-size:15px}
 </style>
 <base target="_blank">
 </head>
 <body>
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   HABITDOS v1.9 — Terminal Habit Tracker
+   HABITDOS v2.0 — Terminal Habit Tracker
    ═══════════════════════════════════════════════════════════════ */
 
 const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
@@ -239,7 +248,7 @@ function getStore(k,f){try{let v=localStorage.getItem(k);if(v!==null)return JSON
 function putStore(k,v){MEM[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
 const uid=()=>Date.now()+"-"+Math.random().toString(36).slice(2);
-const APP_VERSION="1.9";
+const APP_VERSION="2.0";
 const cloneFreq=f=>JSON.parse(JSON.stringify(f));
 const isoDate=d=>k(d);
 
@@ -254,6 +263,7 @@ function freqForDate(h,d){
 function dueWithFreq(freq,d){
   if(freq.type==="daily")return true;
   if(freq.type==="times")return true;
+  if(freq.type==="limit")return true;
   return Array.isArray(freq.days)&&freq.days.includes(d.getDay()+1);
 }
 function isPast(d){return isoDate(d)<isoDate(today())}
@@ -281,6 +291,10 @@ function weekProgVersioned(h,d){
     if(g.freq.type==="times"){
       const n=g.days.filter(x=>done(h,x)).length;
       doneN+=Math.min(n,g.freq.count); target+=g.freq.count;
+    }else if(g.freq.type==="limit"){
+      // success = days at or under the limit (only count days up to today)
+      const days=g.days.filter(x=>!isFuture(x));
+      doneN+=days.filter(x=>limitOk(h,x)).length; target+=days.length;
     }else{
       const dueDays=g.freq.type==="daily"?g.days:g.days.filter(x=>dueWithFreq(g.freq,x));
       doneN+=dueDays.filter(x=>done(h,x)).length; target+=dueDays.length;
@@ -288,7 +302,32 @@ function weekProgVersioned(h,d){
   });
   return {done:doneN,target};
 }
+function isFuture(d){return isoDate(d)>isoDate(today())}
 function habitStats(h){
+  if(isLimit(h)){
+    // For a limit habit, a "successful" day = at or under the max, counted from
+    // the first logged day up to today. Streak = consecutive successful days.
+    const logged=records.filter(r=>r.h===h.id&&typeof r.count==="number").map(r=>parse(r.d)).sort((a,b)=>a-b);
+    const firstDay=logged.length?logged[0]:today();
+    let best=0,run=0,dd=day(firstDay);
+    while(!isFuture(dd)){
+      if(limitOk(h,dd)){run++;best=Math.max(best,run);}else run=0;
+      dd=add(dd,1);
+    }
+    let current=0,d=today();
+    while(!isFuture(d)&&limitOk(h,d)&&d>=firstDay){current++;d=add(d,-1);}
+    const overDays=logged.filter(x=>!limitOk(h,x)).length;
+    const totalCount=records.filter(r=>r.h===h.id&&typeof r.count==="number").reduce((s,r)=>s+r.count,0);
+    let targets=0,fulfilled=0;
+    for(let y=firstDay.getFullYear(); y<=today().getFullYear(); y++){
+      for(let m=0;m<12;m++){
+        const mm=new Date(y,m,1);
+        if(mm>today())continue;
+        monthWeekStarts(mm).forEach(w=>{const p=weekProgVersioned(h,w);targets+=p.target;fulfilled+=p.done;});
+      }
+    }
+    return {current,best,totalDone:overDays,totalCount,p:targets?Math.round(fulfilled/targets*100):0,limit:true};
+  }
   const all=records.filter(r=>r.h===h.id&&r.ok).map(r=>parse(r.d)).sort((a,b)=>a-b);
   let best=0,run=0,prev=null;
   all.forEach(d=>{
@@ -314,8 +353,11 @@ function habitStats(h){
 function monthProgVersioned(h,m){
   let doneN=0,target=0;
   monthDays(m).forEach(d=>{
+    if(isFuture(d))return;
     const f=freqForDate(h,d);
-    if(f.type!=="times"){
+    if(f.type==="limit"){
+      target++; if(limitOk(h,d))doneN++;
+    }else if(f.type!=="times"){
       if(dueWithFreq(f,d)){target++;if(done(h,d))doneN++}
     }
   });
@@ -391,10 +433,31 @@ function ftxt(h){
   let f=h.freq;
   if(f.type==="daily")return"TÄGLICH";
   if(f.type==="times")return`${f.count}× / WOCHE · FLEXIBEL`;
+  if(f.type==="limit")return`MAX ${f.max}× / TAG · LIMIT`;
   return f.days.map(n=>weekdays[n-1]).join(" · ");
 }
 function due(h,d){return dueWithFreq(freqForDate(h,d),d)}
 function done(h,d){return records.some(r=>r.h===h.id&&r.d===k(d)&&r.ok)}
+
+/* ── v2.0: limit-type habits (fewer = better) ── */
+function isLimit(h,d=today()){return freqForDate(h,d).type==="limit";}
+function limitMax(h,d=today()){const f=freqForDate(h,d);return f.type==="limit"?(f.max??0):0;}
+// daily count for a limit habit (records carry {count} instead of {ok})
+function limitCount(h,d){
+  const r=records.find(r=>r.h===h.id&&r.d===k(d)&&typeof r.count==="number");
+  return r?r.count:0;
+}
+function limitSetCount(h,d,n){
+  n=Math.max(0,n);
+  let i=records.findIndex(r=>r.h===h.id&&r.d===k(d)&&typeof r.count==="number");
+  if(i>=0){ if(n===0)records.splice(i,1); else records[i].count=n; }
+  else if(n>0)records.push({h:h.id,d:k(d),count:n});
+  save();render();
+}
+function limitInc(h,d=today()){limitSetCount(h,d,limitCount(h,d)+1);}
+function limitDec(h,d=today()){limitSetCount(h,d,limitCount(h,d)-1);}
+// "success" for a limit habit on a day = stayed at or under the max
+function limitOk(h,d){return limitCount(h,d)<=limitMax(h,d);}
 function toggle(h,d=today()){
   if(!due(h,d))return;
   let i=records.findIndex(r=>r.h===h.id&&r.d===k(d));
@@ -409,11 +472,12 @@ function total(ps){
   return{done:a,target:b,p:b?Math.round(a/b*100):0};
 }
 function dayComplete(d){
-  // v1.9: a day counts as complete when today's obligations (daily / fixed-weekday)
-  // are all done. Flexible weekly-count habits do NOT gate the daily streak.
+  // v1.9/2.0: a day counts as complete when today's obligations
+  // (daily / fixed-weekday / limit) all succeed. Flexible weekly-count habits
+  // do NOT gate the daily streak. Limit habits succeed by staying under max.
   let dueH=active().filter(h=>!isFlexible(h,d)&&due(h,d));
   if(!dueH.length)return false;
-  return dueH.every(h=>done(h,d));
+  return dueH.every(h=>successToday(h,d));
 }
 function globalStreak(){
   let n=0,d=today();
@@ -421,6 +485,12 @@ function globalStreak(){
   return n;
 }
 function mark(h,d){
+  if(isLimit(h,d)){
+    const c=limitCount(h,d), mx=limitMax(h,d);
+    const rec=records.some(r=>r.h===h.id&&r.d===k(d)&&typeof r.count==="number");
+    if(!rec)return'<span class="chk na">·</span>';
+    return c<=mx?`<span class="chk donegreen">${c}</span>`:`<span class="chk limitred">${c}</span>`;
+  }
   if(done(h,d))return'<span class="chk donegreen">[X]</span>';
   if(!due(h,d))return'<span class="chk na">[–]</span>';
   return'<span class="chk">[ ]</span>';
@@ -435,14 +505,16 @@ function progLabel(h,p){
 /* ── v1.9: TODAY = only today's obligations (Option C) ── */
 // A habit is "flexible" if today's active frequency is a weekly-count goal.
 function isFlexible(h,d=today()){return freqForDate(h,d).type==="times";}
-// Obligations = daily + fixed-weekday habits that are actually due today.
+// v2.0: unified "success today" — limit habits succeed by staying under max.
+function successToday(h,d=today()){return isLimit(h,d)?limitOk(h,d):done(h,d);}
+// Obligations = daily + fixed-weekday + limit habits that are due today (not flexible).
 function todayObligations(){return active().filter(h=>!isFlexible(h)&&due(h,today()));}
 // Flexible habits still open this week (shown as optional chips).
 function todayFlexibles(){return active().filter(h=>isFlexible(h));}
-// TODAY percentage counts only today's obligations: each is 1 target, done=1/0.
+// TODAY percentage counts only today's obligations: each is 1 target, success=1/0.
 function todayProgress(){
   const obl=todayObligations();
-  const done_=obl.filter(h=>done(h,today())).length;
+  const done_=obl.filter(h=>successToday(h)).length;
   return{done:done_,target:obl.length,p:obl.length?Math.round(done_/obl.length*100):0};
 }
 
@@ -471,8 +543,12 @@ function todayView(){
   const obl=todayObligations(), flex=todayFlexibles();
   // Hero now measures only today's obligations
   const heroSub = obl.length ? `${x.done} / ${x.target} heute erledigt` : `heute nichts Pflicht`;
-  // Obligation cards
+  // Obligation cards (limit habits get a +/- counter instead of a toggle)
   const oblCards = obl.length ? obl.map(h=>{
+    if(isLimit(h)){
+      const c=limitCount(h,today()), mx=limitMax(h), over=c>mx;
+      return `<div class="card habit limit${over?' limitover':(c===mx?' limitedge':'')}"><div class="row"><b>${esc(h.name)}</b><span class="chk ${over?'limitred':'donegreen'}">${c}/${mx}</span></div><div class="counter limitctr"><button onclick="limitDecById('${h.id}')">−</button><b>${c} heute</b><button onclick="limitIncById('${h.id}')">+</button></div><div class="meta"><span>${over?`${c-mx}× ÜBER LIMIT`:`${mx-c}× übrig`}</span></div></div>`;
+    }
     return `<button class="card habit" onclick="toggleById('${h.id}')"><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span>${ftxt(h)}</span></div></button>`;
   }).join("") : `<div class="hint">Heute stehen keine festen Habits an.</div>`;
   // Flexible block (optional, does not count toward TODAY %)
@@ -871,6 +947,8 @@ function render(){
 
 /* ── Global helpers ── */
 function toggleById(id){let h=habits.find(x=>x.id===id);if(h)toggle(h);}
+function limitIncById(id){let h=habits.find(x=>x.id===id);if(h)limitInc(h);}
+function limitDecById(id){let h=habits.find(x=>x.id===id);if(h)limitDec(h);}
 function changeMonth(n){month=new Date(month.getFullYear(),month.getMonth()+n,1);render();}
 
 function toggleTodo(id){
@@ -919,10 +997,11 @@ function renderEditor(){
 
   let freqSeg=`
     <div class="label">FREQUENZ</div>
-    <div class="seg">
+    <div class="seg seg4">
       <button class="${editFreq.type==="daily"?"sel":""}" onclick="setFreqType('daily')">TÄGLICH</button>
       <button class="${editFreq.type==="times"?"sel":""}" onclick="setFreqType('times')">FLEXIBEL</button>
       <button class="${editFreq.type==="days"?"sel":""}" onclick="setFreqType('days')">WOCHENTAGE</button>
+      <button class="${editFreq.type==="limit"?"sel":""}" onclick="setFreqType('limit')">LIMIT</button>
     </div>
   `;
 
@@ -933,6 +1012,16 @@ function renderEditor(){
       <b>${editFreq.count||3}</b>
       <button onclick="changeCount(1)">+</button>
     </div>
+  `:"";
+
+  let limitCtrl=editFreq.type==="limit"?`
+    <div class="label">MAXIMUM PRO TAG</div>
+    <div class="counter">
+      <button onclick="changeLimit(-1)">−</button>
+      <b>${editFreq.max??5}×</b>
+      <button onclick="changeLimit(1)">+</button>
+    </div>
+    <div class="hint">LIMIT-HABIT · weniger ist besser. Jeder Tipp auf + zählt eins. Ein Tag gilt als geschafft, solange du auf oder unter dem Maximum bleibst.</div>
   `:"";
 
   let daysCtrl=editFreq.type==="days"?`
@@ -947,7 +1036,7 @@ function renderEditor(){
       ${header(title)}
       <div class="top"><b>${title}</b><button onclick="cancelEditor()">ABBRECHEN</button></div>
       <label>NAME<input id="ename" value="${esc(name)}" placeholder="z.B. Lesen, Sport..."></label>
-      ${freqSeg}${timesCtrl}${daysCtrl}
+      ${freqSeg}${timesCtrl}${daysCtrl}${limitCtrl}
       <button class="wide" onclick="saveHabit()">${editId?"SPEICHERN":"HABIT ERSTELLEN"}</button>
       ${archBtn}${unarchBtn}${delBtn}
     </main>
@@ -958,10 +1047,15 @@ function setFreqType(t){
   editFreq={type:t};
   if(t==="times")editFreq.count=3;
   if(t==="days")editDays=[];
+  if(t==="limit")editFreq.max=5;
   renderEditor();
 }
 function changeCount(n){
   editFreq.count=Math.max(1,Math.min(7,(editFreq.count||3)+n));
+  renderEditor();
+}
+function changeLimit(n){
+  editFreq.max=Math.max(0,Math.min(99,(editFreq.max??5)+n));
   renderEditor();
 }
 function toggleDay(d){
