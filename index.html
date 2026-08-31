@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v2.0</title>
+<title>HabitDOS HTML v2.1</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{background:#0a0a0a;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -231,13 +231,16 @@ nav button:active{color:#888;background:#151515}
 .counter.limitctr{margin-top:12px}
 .counter.limitctr button{font-size:28px;min-width:64px}
 .counter.limitctr b{font-size:15px}
+.card.limit:active{background:#2d2d2d}
+.meta .since{letter-spacing:.06em;color:#9a9a9a}
+.card.limit.limitover .meta .since{color:#c88}
 </style>
 <base target="_blank">
 </head>
 <body>
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   HABITDOS v2.0 — Terminal Habit Tracker
+   HABITDOS v2.1 — Terminal Habit Tracker
    ═══════════════════════════════════════════════════════════════ */
 
 const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
@@ -248,7 +251,7 @@ function getStore(k,f){try{let v=localStorage.getItem(k);if(v!==null)return JSON
 function putStore(k,v){MEM[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
 const uid=()=>Date.now()+"-"+Math.random().toString(36).slice(2);
-const APP_VERSION="2.0";
+const APP_VERSION="2.1";
 const cloneFreq=f=>JSON.parse(JSON.stringify(f));
 const isoDate=d=>k(d);
 
@@ -292,8 +295,8 @@ function weekProgVersioned(h,d){
       const n=g.days.filter(x=>done(h,x)).length;
       doneN+=Math.min(n,g.freq.count); target+=g.freq.count;
     }else if(g.freq.type==="limit"){
-      // success = days at or under the limit (only count days up to today)
-      const days=g.days.filter(x=>!isFuture(x));
+      // v2.1 (A4): only evaluate days that were actually tracked and not in the future.
+      const days=g.days.filter(x=>!isFuture(x)&&limitLogged(h,x));
       doneN+=days.filter(x=>limitOk(h,x)).length; target+=days.length;
     }else{
       const dueDays=g.freq.type==="daily"?g.days:g.days.filter(x=>dueWithFreq(g.freq,x));
@@ -356,6 +359,7 @@ function monthProgVersioned(h,m){
     if(isFuture(d))return;
     const f=freqForDate(h,d);
     if(f.type==="limit"){
+      if(!limitLogged(h,d))return;      // v2.1 (A4): untracked day is not counted
       target++; if(limitOk(h,d))doneN++;
     }else if(f.type!=="times"){
       if(dueWithFreq(f,d)){target++;if(done(h,d))doneN++}
@@ -439,7 +443,7 @@ function ftxt(h){
 function due(h,d){return dueWithFreq(freqForDate(h,d),d)}
 function done(h,d){return records.some(r=>r.h===h.id&&r.d===k(d)&&r.ok)}
 
-/* ── v2.0: limit-type habits (fewer = better) ── */
+/* ── v2.0/2.1: limit-type habits (fewer = better) ── */
 function isLimit(h,d=today()){return freqForDate(h,d).type==="limit";}
 function limitMax(h,d=today()){const f=freqForDate(h,d);return f.type==="limit"?(f.max??0):0;}
 // daily count for a limit habit (records carry {count} instead of {ok})
@@ -447,18 +451,89 @@ function limitCount(h,d){
   const r=records.find(r=>r.h===h.id&&r.d===k(d)&&typeof r.count==="number");
   return r?r.count:0;
 }
+// v2.1 (A1): the first day a limit habit may be evaluated (first log, else created, else today)
+function limitStartDate(h){
+  const logged=records
+    .filter(r=>r.h===h.id&&typeof r.count==="number")
+    .map(r=>r.d).sort();
+  if(logged.length)return parse(logged[0]);
+  if(h.created)return parse(h.created.slice(0,10));
+  return today();
+}
+function limitActiveOn(h,d){return isoDate(d)>=isoDate(limitStartDate(h));}
+// A record for this limit habit exists on day d (day was actually tracked)?
+function limitLogged(h,d){return records.some(r=>r.h===h.id&&r.d===k(d)&&typeof r.count==="number");}
+
 function limitSetCount(h,d,n){
   n=Math.max(0,n);
   let i=records.findIndex(r=>r.h===h.id&&r.d===k(d)&&typeof r.count==="number");
-  if(i>=0){ if(n===0)records.splice(i,1); else records[i].count=n; }
+  if(i>=0){
+    if(n===0){records.splice(i,1);}
+    else{
+      records[i].count=n;
+      // keep ts consistent when shrinking; never invent stamps when growing (B2)
+      if(Array.isArray(records[i].ts)&&records[i].ts.length>n){
+        records[i].ts.sort();
+        records[i].ts=records[i].ts.slice(0,n);
+      }
+    }
+  }
   else if(n>0)records.push({h:h.id,d:k(d),count:n});
   save();render();
 }
-function limitInc(h,d=today()){limitSetCount(h,d,limitCount(h,d)+1);}
-function limitDec(h,d=today()){limitSetCount(h,d,limitCount(h,d)-1);}
+// v2.1 (B2): +1 appends a timestamp
+function limitInc(h,d=today()){
+  const key=k(d);
+  let i=records.findIndex(r=>r.h===h.id&&r.d===key&&typeof r.count==="number");
+  const stamp=new Date().toISOString();
+  if(i>=0){ records[i].count=records[i].count+1; (records[i].ts??=[]).push(stamp); }
+  else records.push({h:h.id,d:key,count:1,ts:[stamp]});
+  save();render();
+}
+// v2.1 (B2): -1 removes the most recent timestamp
+function limitDec(h,d=today()){
+  const key=k(d);
+  let i=records.findIndex(r=>r.h===h.id&&r.d===key&&typeof r.count==="number");
+  if(i<0)return;
+  const next=Math.max(0,records[i].count-1);
+  if(next===0){ records.splice(i,1); }
+  else{
+    records[i].count=next;
+    if(Array.isArray(records[i].ts)&&records[i].ts.length){records[i].ts.sort();records[i].ts.pop();}
+  }
+  save();render();
+}
 // "success" for a limit habit on a day = stayed at or under the max
 function limitOk(h,d){return limitCount(h,d)<=limitMax(h,d);}
+
+/* v2.1 (B3): time since the last count, in 5-minute steps */
+function limitLastStamp(h){
+  const recs=records.filter(r=>r.h===h.id&&Array.isArray(r.ts)&&r.ts.length);
+  if(!recs.length)return null;
+  let latest=null;
+  recs.forEach(r=>r.ts.forEach(s=>{ if(typeof s==="string"&&(!latest||s>latest))latest=s; }));
+  return latest?new Date(latest):null;
+}
+function limitSinceText(h,now=new Date()){
+  const last=limitLastStamp(h);
+  if(!last||isNaN(last))return "NOCH NICHT ERFASST";
+  const rawMin=Math.floor((now-last)/60000);
+  if(rawMin<0)return "GERADE EBEN";                       // clock moved back
+  const dayDiff=Math.round((day(now)-day(last))/86400000);
+  if(dayDiff===1)return "GESTERN";
+  if(dayDiff>1)return `VOR ${dayDiff} TAGEN`;
+  if(rawMin<5)return "GERADE EBEN";
+  if(rawMin<60)return `VOR ${Math.floor(rawMin/5)*5} MIN`;
+  if(rawMin<90){
+    const m=Math.floor((rawMin-60)/5)*5;
+    return m?`VOR 1 STD ${m} MIN`:"VOR 1 STD";
+  }
+  const halfHours=Math.floor(rawMin/30)/2;                // round down to half hours
+  return `VOR ${String(halfHours).replace(".",",")} STD`;
+}
+
 function toggle(h,d=today()){
+  if(isLimit(h,d))return;                                 // A5: never write ok on a limit habit
   if(!due(h,d))return;
   let i=records.findIndex(r=>r.h===h.id&&r.d===k(d));
   if(i>=0)records[i].ok=!records[i].ok;
@@ -472,16 +547,16 @@ function total(ps){
   return{done:a,target:b,p:b?Math.round(a/b*100):0};
 }
 function dayComplete(d){
-  // v1.9/2.0: a day counts as complete when today's obligations
-  // (daily / fixed-weekday / limit) all succeed. Flexible weekly-count habits
-  // do NOT gate the daily streak. Limit habits succeed by staying under max.
-  let dueH=active().filter(h=>!isFlexible(h,d)&&due(h,d));
+  // v2.1 (A1): obligations = daily / fixed-weekday / limit habits due that day.
+  // Limit habits only count once they are active (created/first-logged), so an
+  // untracked limit habit no longer makes every past day "complete".
+  let dueH=active().filter(h=>!isFlexible(h,d)&&due(h,d)&&(!isLimit(h,d)||limitActiveOn(h,d)));
   if(!dueH.length)return false;
   return dueH.every(h=>successToday(h,d));
 }
 function globalStreak(){
-  let n=0,d=today();
-  while(dayComplete(d)){n++;d=add(d,-1)}
+  let n=0,d=today(),guard=0;
+  while(dayComplete(d) && guard++ < 3650){n++;d=add(d,-1)}   // A1: hard safety cap (~10y)
   return n;
 }
 function mark(h,d){
@@ -499,6 +574,7 @@ function mark(h,d){
 function progLabel(h,p){
   const f=freqForDate(h,today());
   if(f.type==="times")return`${p.done}/${p.target} THIS WEEK`;
+  if(f.type==="limit")return`${limitCount(h,today())}/${f.max} HEUTE`;
   return`${p.done}/${p.target}`;
 }
 
@@ -534,7 +610,7 @@ function qhint(q){return{1:"SOFORT",2:"PLANEN",3:"DELEGIEREN",4:"STREICHEN"}[q]}
 function sofortSection(){
   let items=todos.filter(t=>t.q===1&&!t.done);
   if(!items.length)return"";
-  return`<div class="quad sofort"><div class="qh"><b>SOFORT · WICHTIG &amp; DRINGEND</b><small>${items.length}</small></div>${items.map(t=>`<div class="todo-item"><button class="tbox" onclick="toggleTodo('${t.id}')">[ ]</button><span class="ttext">${esc(t.text)}</span></div>`).join("")}</div>`;
+  return`<div class="quad sofort"><div class="qh"><b>SOFORT · WICHTIG &amp; DRINGEND</b><small>${items.length}</small></div>${items.map(t=>`<div class="todo-item"><button class="tbox" onclick="toggleTodo('${esc(t.id)}')">[ ]</button><span class="ttext">${esc(t.text)}</span></div>`).join("")}</div>`;
 }
 
 function todayView(){
@@ -547,9 +623,9 @@ function todayView(){
   const oblCards = obl.length ? obl.map(h=>{
     if(isLimit(h)){
       const c=limitCount(h,today()), mx=limitMax(h), over=c>mx;
-      return `<div class="card habit limit${over?' limitover':(c===mx?' limitedge':'')}"><div class="row"><b>${esc(h.name)}</b><span class="chk ${over?'limitred':'donegreen'}">${c}/${mx}</span></div><div class="counter limitctr"><button onclick="limitDecById('${h.id}')">−</button><b>${c} heute</b><button onclick="limitIncById('${h.id}')">+</button></div><div class="meta"><span>${over?`${c-mx}× ÜBER LIMIT`:`${mx-c}× übrig`}</span></div></div>`;
+      return `<div class="card habit limit${over?' limitover':(c===mx?' limitedge':'')}"><div class="row"><b>${esc(h.name)}</b><span class="chk ${over?'limitred':'donegreen'}">${c}/${mx}</span></div><div class="counter limitctr"><button onclick="limitDecById('${esc(h.id)}')">−</button><b>${c} heute</b><button onclick="limitIncById('${esc(h.id)}')">+</button></div><div class="meta"><span class="since" data-since-habit="${esc(h.id)}">LETZTE: ${limitSinceText(h)}</span><span>${over?`${c-mx}× ÜBER LIMIT`:`${mx-c}× übrig`}</span></div></div>`;
     }
-    return `<button class="card habit" onclick="toggleById('${h.id}')"><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span>${ftxt(h)}</span></div></button>`;
+    return `<button class="card habit" onclick="toggleById('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span>${ftxt(h)}</span></div></button>`;
   }).join("") : `<div class="hint">Heute stehen keine festen Habits an.</div>`;
   // Flexible block (optional, does not count toward TODAY %)
   let flexBlock = "";
@@ -558,7 +634,7 @@ function todayView(){
       const p=weekProgVersioned(h,today());
       const doneToday=done(h,today());
       const reached=p.done>=p.target;
-      return `<button class="card habit flex${reached?' flexdone':''}" onclick="toggleById('${h.id}')"><div class="row"><b>${esc(h.name)}</b>${doneToday?'<span class="chk donegreen">[X]</span>':'<span class="chk">[ ]</span>'}</div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${p.done}/${p.target} THIS WEEK${reached?' · ZIEL ERREICHT':''}</span></div></button>`;
+      return `<button class="card habit flex${reached?' flexdone':''}" onclick="toggleById('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b>${doneToday?'<span class="chk donegreen">[X]</span>':'<span class="chk">[ ]</span>'}</div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${p.done}/${p.target} THIS WEEK${reached?' · ZIEL ERREICHT':''}</span></div></button>`;
     }).join("")}`;
   }
   return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${streakLine}<div class="hero"><div class="hero-top"><small>TODAY</small><span class="hero-pct">${x.p}%</span></div><div class="hero-bar">${bar(x.done,x.target,20)}</div><div class="hero-sub">${heroSub}</div></div>${milestoneBanner(streak)}${sofortSection()}${oblCards}${flexBlock}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`;
@@ -758,7 +834,7 @@ function statsView(){
     <div class="stat"><small>HABITS</small><b>${hs.length}</b></div>
   </div>
   <div class="section-title">HABIT WÄHLEN</div>
-  ${hs.map(x=>`<button class="habit-pick" onclick="openHabitHistory('${x.h.id}')">› ${esc(x.h.name)} · ${x.s.p}%</button>`).join("")}
+  ${hs.map(x=>`<button class="habit-pick" onclick="openHabitHistory('${esc(x.h.id)}')">› ${esc(x.h.name)} · ${x.s.p}%</button>`).join("")}
   <div class="section-title">ÜBERSICHT</div>
   ${hs.map(x=>`<div class="detail-card"><div class="row"><b>${esc(x.h.name)}</b><span class="${x.s.p>=90?"green":""}">${x.s.p}%</span></div><div class="mini-bar">${bar(x.s.p,100,20)}</div><div class="meta"><span>STREAK ${x.s.current}</span><span>BEST ${x.s.best}</span><span>TOTAL ${x.s.totalDone}</span></div></div>`).join("")}
   <div class="hint">STATISTIKEN basieren auf den lokal gespeicherten Erledigungen. Vergangene Wochen und Monate bleiben unveränderbar.</div>
@@ -804,12 +880,12 @@ function habitHistoryView(){
 }
 
 function habitsView(){
-  return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>{let s=habitStats(h);return`<button class="card habit" onclick="editor('${h.id}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span><span>${s.p}%</span><span>STREAK ${s.current}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="showHabitStats()">STATISTIK</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary danger" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v${APP_VERSION} · OFFLINE · WEEK bleibt reine Übersicht.</div></main>`;
+  return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>{let s=habitStats(h);return`<button class="card habit" onclick="editor('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span><span>${s.p}%</span><span>STREAK ${s.current}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="showHabitStats()">STATISTIK</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary danger" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v${APP_VERSION} · OFFLINE · WEEK bleibt reine Übersicht.</div></main>`;
 }
 
 function quadrant(q){
   let items=todos.filter(t=>t.q===q).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);
-  return`<div class="quad"><div class="qh"><b>${qlabel(q)}</b><small>${qhint(q)} · ${items.length}</small></div>${items.length?items.map(t=>`<div class="todo-item ${t.done?"done":""}"><button class="tbox" onclick="toggleTodo('${t.id}')">${t.done?"[X]":"[ ]"}</button><span class="ttext">${esc(t.text)}</span><button class="tdel" onclick="delTodo('${t.id}')">×</button></div>`).join(""):'<div class="qempty">–</div>'}</div>`;
+  return`<div class="quad"><div class="qh"><b>${qlabel(q)}</b><small>${qhint(q)} · ${items.length}</small></div>${items.length?items.map(t=>`<div class="todo-item ${t.done?"done":""}"><button class="tbox" onclick="toggleTodo('${esc(t.id)}')">${t.done?"[X]":"[ ]"}</button><span class="ttext">${esc(t.text)}</span><button class="tdel" onclick="delTodo('${esc(t.id)}')">×</button></div>`).join(""):'<div class="qempty">–</div>'}</div>`;
 }
 
 function todoView(){
@@ -837,15 +913,87 @@ function resetData(){
   save();render();
 }
 
+/* v2.1 (A2/A3): sanitize & validate an imported backup before it touches app state. */
+const VALID_TYPES=["daily","times","days","limit"];
+const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+function normalizeImportedHabit(h){
+  if(!h||typeof h!=="object")return null;
+  const out={
+    id:String(h.id||""),                       // real sanitizing happens in sanitizeImport
+    name:String(h.name==null?"Unbenannt":h.name).slice(0,120),
+    arch:!!h.arch,
+    created:(typeof h.created==="string"&&h.created)?h.created:new Date().toISOString()
+  };
+  let f=(h.freq&&VALID_TYPES.includes(h.freq.type))?h.freq:{type:"daily"};
+  if(f.type==="times")f={type:"times",count:Math.max(1,Math.min(7,Number(f.count)||3))};
+  else if(f.type==="limit")f={type:"limit",max:Math.max(0,Math.min(99,Number(f.max)??5))};
+  else if(f.type==="days"){
+    const days=Array.isArray(f.days)?[...new Set(f.days.filter(n=>n>=1&&n<=7))].sort((a,b)=>a-b):[];
+    f=days.length?{type:"days",days}:{type:"daily"};
+  }else f={type:"daily"};
+  out.freq=f;
+  out.versions=(Array.isArray(h.versions)?h.versions.filter(v=>v&&v.from&&v.freq&&VALID_TYPES.includes(v.freq.type)):[]);
+  if(!out.versions.length)out.versions=[{from:"2000-01-01",freq:cloneFreq(f)}];
+  return out;
+}
+function sanitizeImport(x){
+  const idMap={}, safe=s=>String(s).replace(/[^A-Za-z0-9._-]/g,"");
+  let dropped=0;
+  // habits
+  const habs=[];
+  (Array.isArray(x.habits)?x.habits:[]).forEach(raw=>{
+    const h=normalizeImportedHabit(raw);
+    if(!h){dropped++;return;}
+    const old=String(raw&&raw.id!=null?raw.id:"");
+    let nid=safe(old);
+    if(!nid||idMap[old]!==undefined||habs.some(e=>e.id===nid))nid=uid();
+    idMap[old]=nid; h.id=nid;
+    habs.push(h);
+  });
+  const validIds=new Set(habs.map(h=>h.id));
+  // records
+  const recs=[];
+  (Array.isArray(x.records)?x.records:[]).forEach(r=>{
+    if(!r||typeof r!=="object"){dropped++;return;}
+    let hid=idMap[String(r.h)]??safe(r.h);
+    if(!validIds.has(hid)){dropped++;return;}
+    if(!DATE_RE.test(String(r.d))){dropped++;return;}
+    const out={h:hid,d:String(r.d)};
+    if(typeof r.count==="number"&&isFinite(r.count)){
+      out.count=Math.max(0,Math.floor(r.count));
+      if(Array.isArray(r.ts)){
+        const ts=r.ts.filter(s=>typeof s==="string"&&!isNaN(Date.parse(s)));
+        if(ts.length)out.ts=ts;
+      }
+    }else{
+      out.ok=!!r.ok;
+    }
+    recs.push(out);
+  });
+  // todos
+  const tds=[];
+  (Array.isArray(x.todos)?x.todos:[]).forEach(t=>{
+    if(!t||typeof t!=="object"){dropped++;return;}
+    let tid=safe(t.id); if(!tid||tds.some(e=>e.id===tid))tid=uid();
+    const q=[1,2,3,4].includes(t.q)?t.q:1;
+    tds.push({id:tid,text:String(t.text==null?"":t.text).slice(0,500),q,done:!!t.done});
+  });
+  return {habits:habs,records:recs,todos:tds,dropped};
+}
 function restore(e){
   let file=e.target.files[0];if(!file)return;
   let r=new FileReader();
   r.onload=()=>{
     try{
       let x=JSON.parse(r.result);
-      if(!Array.isArray(x.habits)||!Array.isArray(x.records))throw 0;
-      habits=x.habits;records=x.records;todos=Array.isArray(x.todos)?x.todos:[];
-      save();render();alert("HabitDOS-Daten wurden importiert.");
+      if(!x||typeof x!=="object"||!Array.isArray(x.habits)||!Array.isArray(x.records))throw 0;
+      const clean=sanitizeImport(x);
+      if(!clean.habits.length && (x.habits.length>0))throw 0;   // structurally unusable
+      habits=clean.habits;records=clean.records;todos=clean.todos;
+      save();render();
+      alert(clean.dropped>0
+        ? `HabitDOS-Daten importiert. ${clean.dropped} ungültige Einträge übersprungen.`
+        : "HabitDOS-Daten wurden importiert.");
     }catch(err){alert("Ungültige HabitDOS-Backup-Datei.");}
   };
   r.readAsText(file);
@@ -1082,7 +1230,7 @@ function saveHabit(){
       h.name=name;h.freq=freq;
     }
   }else{
-    habits.push({id:uid(),name,freq,arch:false,versions:[{from:"2000-01-01",freq:cloneFreq(freq)}]});
+    habits.push({id:uid(),name,freq,arch:false,created:new Date().toISOString(),versions:[{from:"2000-01-01",freq:cloneFreq(freq)}]});
   }
   save();render();
 }
@@ -1126,6 +1274,24 @@ function addTodo(q){
 }
 
 /* ── Init ── */
+/* v2.1 (B5): keep the "time since last count" label fresh without a full re-render */
+let sinceTimer=null;
+function refreshSinceLabels(){
+  if(tab!=="today")return;
+  if(!active().some(h=>isLimit(h)))return;
+  document.querySelectorAll("[data-since-habit]").forEach(el=>{
+    const h=habits.find(x=>x.id===el.getAttribute("data-since-habit"));
+    if(h)el.textContent="LETZTE: "+limitSinceText(h);
+  });
+}
+function startSinceTimer(){
+  if(sinceTimer)clearInterval(sinceTimer);
+  sinceTimer=setInterval(refreshSinceLabels,60000);
+}
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden && tab==="today")render();
+});
+startSinceTimer();
 save();render();
 </script>
 </body>
