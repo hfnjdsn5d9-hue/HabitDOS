@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v2.1</title>
+<title>HabitDOS HTML v2.2</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{background:#0a0a0a;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -234,13 +234,32 @@ nav button:active{color:#888;background:#151515}
 .card.limit:active{background:#2d2d2d}
 .meta .since{letter-spacing:.06em;color:#9a9a9a}
 .card.limit.limitover .meta .since{color:#c88}
+/* v2.2: limit states + zero-confirm */
+.card.limit.limitopen{border-color:#4a4a4a;border-style:dashed}
+.chk.limitopen-b{color:#777}
+.zerobtn{margin-top:10px;min-height:44px;font-size:10px;border-color:#4a4a4a;color:#bbb}
+.zerobtn.zeroon{border-color:#4ea84e;color:#69ff69}
+.zerobtn:active{background:#232323}
+/* v2.2: quick capture + inbox + bucket picker */
+.quickrow{display:flex;gap:8px;margin:0 0 14px}
+.quickrow input{flex:1;background:#1c1c1c;border:1px solid #5a5a5a;color:#fff;padding:14px;font:inherit;font-size:16px}
+.quickrow button{width:58px;background:#1c1c1c;border:1px solid #5a5a5a;color:#e6e6e6;font:inherit;font-size:22px;font-weight:800}
+.quickrow button:active{background:#292929}
+.quad.inbox{margin:0 0 14px;border-color:#6a6a6a}
+.quad.inbox .qh b{font-size:11px;letter-spacing:.1em}
+.tmove{background:none;border:0;color:#888;font-size:17px;padding:4px 6px;margin:-4px -4px -4px 0;line-height:1}
+.ttext{cursor:pointer}
+.tpick{display:flex;flex-wrap:wrap;gap:5px;padding:7px 0 10px}
+.tpick button{background:#1c1c1c;border:1px solid #5a5a5a;color:#ddd;font:inherit;font-size:9px;padding:9px 8px;min-height:38px;letter-spacing:.04em}
+.tpick button.sel{border-color:#69ff69;color:#69ff69;font-weight:800}
+.tpick .tpdel{border-color:#6b3f3f;color:#e6a5a5;margin-left:auto}
 </style>
 <base target="_blank">
 </head>
 <body>
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   HABITDOS v2.1 — Terminal Habit Tracker
+   HABITDOS v2.2 — Terminal Habit Tracker
    ═══════════════════════════════════════════════════════════════ */
 
 const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
@@ -251,7 +270,7 @@ function getStore(k,f){try{let v=localStorage.getItem(k);if(v!==null)return JSON
 function putStore(k,v){MEM[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
 const uid=()=>Date.now()+"-"+Math.random().toString(36).slice(2);
-const APP_VERSION="2.1";
+const APP_VERSION="2.2";
 const cloneFreq=f=>JSON.parse(JSON.stringify(f));
 const isoDate=d=>k(d);
 
@@ -296,7 +315,7 @@ function weekProgVersioned(h,d){
       doneN+=Math.min(n,g.freq.count); target+=g.freq.count;
     }else if(g.freq.type==="limit"){
       // v2.1 (A4): only evaluate days that were actually tracked and not in the future.
-      const days=g.days.filter(x=>!isFuture(x)&&limitLogged(h,x));
+      const days=g.days.filter(x=>!isFuture(x)&&limitEvaluated(h,x));
       doneN+=days.filter(x=>limitOk(h,x)).length; target+=days.length;
     }else{
       const dueDays=g.freq.type==="daily"?g.days:g.days.filter(x=>dueWithFreq(g.freq,x));
@@ -359,7 +378,7 @@ function monthProgVersioned(h,m){
     if(isFuture(d))return;
     const f=freqForDate(h,d);
     if(f.type==="limit"){
-      if(!limitLogged(h,d))return;      // v2.1 (A4): untracked day is not counted
+      if(!limitEvaluated(h,d))return;   // v2.2: only counted or confirmed days are scored
       target++; if(limitOk(h,d))doneN++;
     }else if(f.type!=="times"){
       if(dueWithFreq(f,d)){target++;if(done(h,d))doneN++}
@@ -463,6 +482,28 @@ function limitStartDate(h){
 function limitActiveOn(h,d){return isoDate(d)>=isoDate(limitStartDate(h));}
 // A record for this limit habit exists on day d (day was actually tracked)?
 function limitLogged(h,d){return records.some(r=>r.h===h.id&&r.d===k(d)&&typeof r.count==="number");}
+/* v2.2: a day is "evaluated" if it was counted (>0) OR explicitly confirmed as zero.
+   Untracked days count neither positive nor negative. */
+function limitConfirmed(h,d){
+  return records.some(r=>r.h===h.id&&r.d===k(d)&&r.confirmed===true);
+}
+function limitEvaluated(h,d){
+  return limitCount(h,d)>0 || limitConfirmed(h,d);
+}
+// Confirm a zero-day (or un-confirm it again)
+function limitConfirmZero(h,d=today()){
+  const key=k(d);
+  let i=records.findIndex(r=>r.h===h.id&&r.d===key&&(typeof r.count==="number"||r.confirmed===true));
+  if(i>=0){
+    if(records[i].confirmed){                       // toggle off
+      if(!records[i].count)records.splice(i,1);
+      else delete records[i].confirmed;
+    }else records[i].confirmed=true;
+  }else{
+    records.push({h:h.id,d:key,count:0,confirmed:true});
+  }
+  save();render();
+}
 
 function limitSetCount(h,d,n){
   n=Math.max(0,n);
@@ -486,7 +527,11 @@ function limitInc(h,d=today()){
   const key=k(d);
   let i=records.findIndex(r=>r.h===h.id&&r.d===key&&typeof r.count==="number");
   const stamp=new Date().toISOString();
-  if(i>=0){ records[i].count=records[i].count+1; (records[i].ts??=[]).push(stamp); }
+  if(i>=0){
+    records[i].count=records[i].count+1;
+    if(records[i].confirmed)delete records[i].confirmed;   // v2.2: real count supersedes "confirmed 0"
+    (records[i].ts??=[]).push(stamp);
+  }
   else records.push({h:h.id,d:key,count:1,ts:[stamp]});
   save();render();
 }
@@ -496,7 +541,7 @@ function limitDec(h,d=today()){
   let i=records.findIndex(r=>r.h===h.id&&r.d===key&&typeof r.count==="number");
   if(i<0)return;
   const next=Math.max(0,records[i].count-1);
-  if(next===0){ records.splice(i,1); }
+  if(next===0&&!records[i].confirmed){ records.splice(i,1); }
   else{
     records[i].count=next;
     if(Array.isArray(records[i].ts)&&records[i].ts.length){records[i].ts.sort();records[i].ts.pop();}
@@ -547,10 +592,11 @@ function total(ps){
   return{done:a,target:b,p:b?Math.round(a/b*100):0};
 }
 function dayComplete(d){
-  // v2.1 (A1): obligations = daily / fixed-weekday / limit habits due that day.
-  // Limit habits only count once they are active (created/first-logged), so an
-  // untracked limit habit no longer makes every past day "complete".
-  let dueH=active().filter(h=>!isFlexible(h,d)&&due(h,d)&&(!isLimit(h,d)||limitActiveOn(h,d)));
+  // v2.2: obligations = daily / fixed-weekday habits, plus limit habits that were
+  // actually evaluated that day (counted or confirmed as zero). An untracked limit
+  // day is neutral: it neither completes nor breaks the day.
+  let dueH=active().filter(h=>!isFlexible(h,d)&&due(h,d)
+    &&(!isLimit(h,d)||(limitActiveOn(h,d)&&limitEvaluated(h,d))));
   if(!dueH.length)return false;
   return dueH.every(h=>successToday(h,d));
 }
@@ -582,14 +628,19 @@ function progLabel(h,p){
 // A habit is "flexible" if today's active frequency is a weekly-count goal.
 function isFlexible(h,d=today()){return freqForDate(h,d).type==="times";}
 // v2.0: unified "success today" — limit habits succeed by staying under max.
-function successToday(h,d=today()){return isLimit(h,d)?limitOk(h,d):done(h,d);}
+function successToday(h,d=today()){
+  // v2.2: a limit habit only succeeds on a day that was counted or confirmed as zero.
+  // An untracked day is neutral (handled by dayComplete/scoring), never an automatic win.
+  return isLimit(h,d) ? (limitEvaluated(h,d)&&limitOk(h,d)) : done(h,d);
+}
 // Obligations = daily + fixed-weekday + limit habits that are due today (not flexible).
 function todayObligations(){return active().filter(h=>!isFlexible(h)&&due(h,today()));}
 // Flexible habits still open this week (shown as optional chips).
 function todayFlexibles(){return active().filter(h=>isFlexible(h));}
 // TODAY percentage counts only today's obligations: each is 1 target, success=1/0.
+// v2.2: a limit habit joins the target only once it was counted or confirmed.
 function todayProgress(){
-  const obl=todayObligations();
+  const obl=todayObligations().filter(h=>!isLimit(h)||limitEvaluated(h,today()));
   const done_=obl.filter(h=>successToday(h)).length;
   return{done:done_,target:obl.length,p:obl.length?Math.round(done_/obl.length*100):0};
 }
@@ -623,7 +674,18 @@ function todayView(){
   const oblCards = obl.length ? obl.map(h=>{
     if(isLimit(h)){
       const c=limitCount(h,today()), mx=limitMax(h), over=c>mx;
-      return `<div class="card habit limit${over?' limitover':(c===mx?' limitedge':'')}"><div class="row"><b>${esc(h.name)}</b><span class="chk ${over?'limitred':'donegreen'}">${c}/${mx}</span></div><div class="counter limitctr"><button onclick="limitDecById('${esc(h.id)}')">−</button><b>${c} heute</b><button onclick="limitIncById('${esc(h.id)}')">+</button></div><div class="meta"><span class="since" data-since-habit="${esc(h.id)}">LETZTE: ${limitSinceText(h)}</span><span>${over?`${c-mx}× ÜBER LIMIT`:`${mx-c}× übrig`}</span></div></div>`;
+      const evaluated=limitEvaluated(h,today());
+      const conf=limitConfirmed(h,today());
+      const stateCls = !evaluated ? ' limitopen' : (over ? ' limitover' : (c===mx ? ' limitedge' : ''));
+      const badge = !evaluated ? `<span class="chk limitopen-b">–/${mx}</span>`
+                   : `<span class="chk ${over?'limitred':'donegreen'}">${c}/${mx}</span>`;
+      const statusTxt = !evaluated ? 'NICHT ERFASST'
+                      : (conf&&c===0 ? 'BESTÄTIGT: 0 HEUTE'
+                      : (over ? `${c-mx}× ÜBER LIMIT` : `${mx-c}× übrig`));
+      const zeroBtn = (c===0)
+        ? `<button class="wide zerobtn${conf?' zeroon':''}" onclick="limitZeroById('${esc(h.id)}')">${conf?'✓ 0 BESTÄTIGT — TIPPEN ZUM WIDERRUFEN':'0 BESTÄTIGEN'}</button>`
+        : "";
+      return `<div class="card habit limit${stateCls} noswipe"><div class="row"><b>${esc(h.name)}</b>${badge}</div><div class="counter limitctr noswipe"><button onclick="limitDecById('${esc(h.id)}')">−</button><b>${c} heute</b><button onclick="limitIncById('${esc(h.id)}')">+</button></div>${zeroBtn}<div class="meta"><span class="since" data-since-habit="${esc(h.id)}">LETZTE: ${limitSinceText(h)}</span><span>${statusTxt}</span></div></div>`;
     }
     return `<button class="card habit" onclick="toggleById('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span>${ftxt(h)}</span></div></button>`;
   }).join("") : `<div class="hint">Heute stehen keine festen Habits an.</div>`;
@@ -883,14 +945,43 @@ function habitsView(){
   return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>{let s=habitStats(h);return`<button class="card habit" onclick="editor('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span><span>${s.p}%</span><span>STREAK ${s.current}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="showHabitStats()">STATISTIK</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary danger" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v${APP_VERSION} · OFFLINE · WEEK bleibt reine Übersicht.</div></main>`;
 }
 
+/* v2.2: one renderer for every todo row, with an inline bucket picker. */
+function todoRow(t,compact){
+  const picker = (pickerTodoId===t.id) ? `<div class="tpick">${
+      [[0,"AKTUELL"],[1,"W+D"],[2,"W"],[3,"D"],[4,"–"]]
+        .map(([q,lbl])=>`<button class="${t.q===q?'sel':''}" onclick="moveTodo('${esc(t.id)}',${q})">${lbl}</button>`).join("")
+    }<button class="tpdel" onclick="delTodo('${esc(t.id)}')">LÖSCHEN</button></div>` : "";
+  return `<div class="todo-item ${t.done?"done":""}"><button class="tbox" onclick="toggleTodo('${esc(t.id)}')">${t.done?"[X]":"[ ]"}</button><span class="ttext" onclick="togglePicker('${esc(t.id)}')">${esc(t.text)}</span><button class="tmove" onclick="togglePicker('${esc(t.id)}')">⋯</button></div>${picker}`;
+}
 function quadrant(q){
   let items=todos.filter(t=>t.q===q).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);
-  return`<div class="quad"><div class="qh"><b>${qlabel(q)}</b><small>${qhint(q)} · ${items.length}</small></div>${items.length?items.map(t=>`<div class="todo-item ${t.done?"done":""}"><button class="tbox" onclick="toggleTodo('${esc(t.id)}')">${t.done?"[X]":"[ ]"}</button><span class="ttext">${esc(t.text)}</span><button class="tdel" onclick="delTodo('${esc(t.id)}')">×</button></div>`).join(""):'<div class="qempty">–</div>'}</div>`;
+  return`<div class="quad"><div class="qh"><b>${qlabel(q)}</b><small>${qhint(q)} · ${items.length}</small></div>${items.length?items.map(t=>todoRow(t,true)).join(""):'<div class="qempty">–</div>'}</div>`;
 }
+/* AKTUELL = quick inbox (q:0), not yet sorted into the matrix */
+function inboxSection(){
+  const items=todos.filter(t=>(t.q??0)===0).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);
+  return `<div class="quad inbox"><div class="qh"><b>AKTUELL</b><small>UNSORTIERT · ${items.length}</small></div>${
+    items.length?items.map(t=>todoRow(t,false)).join(""):'<div class="qempty">Nichts offen. Oben eintippen und mit Enter hinzufügen.</div>'
+  }</div>`;
+}
+function quickAddTodo(){
+  const el=document.getElementById("quickadd");
+  if(!el)return;
+  const text=el.value.trim();
+  if(!text)return;
+  todos.push({id:uid(),text:text.slice(0,500),q:0,done:false,created:new Date().toISOString()});
+  el.value="";
+  save();render();
+  const again=document.getElementById("quickadd");
+  if(again){try{again.focus({preventScroll:true})}catch(e){again.focus()}}   // stay in the field
+}
+function quickAddKey(e){ if(e.key==="Enter"){e.preventDefault();quickAddTodo();} }
 
 function todoView(){
+  purgeOldTodos();
   let open=todos.filter(t=>!t.done).length,doneN=todos.filter(t=>t.done).length,tt=open+doneN;
-  return`<main>${header("TODO","Eisenhower-Matrix · einmalige Aufgaben")}<div class="hero"><div class="hero-top"><small>OFFEN</small><span class="hero-pct">${open}</span></div><div class="hero-bar">${bar(doneN,tt||1,20)}</div><div class="hero-sub">${doneN} von ${tt} erledigt</div></div>${(open===0&&tt>0)?msgBanner("INBOX LEER"):""}<div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div><button class="wide" onclick="todoEditor()">+ AUFGABE HINZUFÜGEN</button><div class="hint">Aufgaben wiederholen sich nicht und laufen nicht ab. Für wiederkehrende Routinen siehe HABITS.</div></main>`;
+  const inboxOpen=todos.filter(t=>(t.q??0)===0&&!t.done).length;
+  return`<main>${header("TODO","Eisenhower-Matrix · einmalige Aufgaben")}<div class="hero"><div class="hero-top"><small>OFFEN</small><span class="hero-pct">${open}</span></div><div class="hero-bar">${bar(doneN,tt||1,20)}</div><div class="hero-sub">${doneN} von ${tt} erledigt${inboxOpen?` · ${inboxOpen} unsortiert`:""}</div></div><div class="quickrow noswipe"><input id="quickadd" placeholder="Schnell eintragen…" onkeydown="quickAddKey(event)" autocomplete="off"><button onclick="quickAddTodo()">+</button></div>${inboxSection()}<div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div><div class="hint">AKTUELL ist der schnelle Eingang. Über ⋯ verschiebst du eine Aufgabe in die Matrix. Erledigtes verschwindet nach 24 Stunden von selbst.</div></main>`;
 }
 
 /* ── Tab Order for Swipe ── */
@@ -975,8 +1066,13 @@ function sanitizeImport(x){
   (Array.isArray(x.todos)?x.todos:[]).forEach(t=>{
     if(!t||typeof t!=="object"){dropped++;return;}
     let tid=safe(t.id); if(!tid||tds.some(e=>e.id===tid))tid=uid();
-    const q=[1,2,3,4].includes(t.q)?t.q:1;
-    tds.push({id:tid,text:String(t.text==null?"":t.text).slice(0,500),q,done:!!t.done});
+    const q=[0,1,2,3,4].includes(t.q)?t.q:0;     // v2.2: 0 = AKTUELL (quick inbox)
+    const out={id:tid,text:String(t.text==null?"":t.text).slice(0,500),q,done:!!t.done};
+    if(typeof t.created==="string"&&!isNaN(Date.parse(t.created)))out.created=t.created;
+    if(out.done){
+      out.doneAt=(typeof t.doneAt==="string"&&!isNaN(Date.parse(t.doneAt)))?t.doneAt:new Date().toISOString();
+    }
+    tds.push(out);
   });
   return {habits:habs,records:recs,todos:tds,dropped};
 }
@@ -1000,13 +1096,15 @@ function restore(e){
 }
 
 /* ── Swipe Navigation ── */
-let touchStartX=0,touchStartY=0,touchStartTime=0;
+let touchStartX=0,touchStartY=0,touchStartTime=0,touchBlocked=false;
 const SWIPE_THRESHOLD=60;  // min horizontal px
 const SWIPE_MAX_Y=80;      // max vertical drift
 const SWIPE_MAX_TIME=400;  // max duration ms
 
 document.addEventListener("touchstart",e=>{
   if(e.touches.length!==1)return;
+  // v2.2: gestures starting on a counter card never switch tabs (mis-taps while counting)
+  touchBlocked = !!(e.target&&e.target.closest&&e.target.closest(".noswipe"));
   touchStartX=e.touches[0].clientX;
   touchStartY=e.touches[0].clientY;
   touchStartTime=Date.now();
@@ -1018,6 +1116,7 @@ document.addEventListener("touchend",e=>{
   const dy=e.changedTouches[0].clientY-touchStartY;
   const dt=Date.now()-touchStartTime;
   touchStartX=touchStartY=0;
+  if(touchBlocked){touchBlocked=false;return;}   // v2.2: started on a counter card
   if(dt>SWIPE_MAX_TIME)return;
   if(Math.abs(dy)>SWIPE_MAX_Y)return;
   if(Math.abs(dx)<SWIPE_THRESHOLD)return;
@@ -1074,7 +1173,13 @@ function setTab(t){
   render();
 }
 
+let lastRenderedTab=null;
 function render(){
+  // v2.2: keep the current scroll position when re-rendering the SAME tab
+  // (checking a habit, counting a cigarette, ticking a todo). Only a real tab
+  // change restores that tab's stored position.
+  const sameTab = (lastRenderedTab===tab);
+  const keepY = sameTab ? window.scrollY : null;
   let html="";
   switch(tab){
     case "today":html=todayView();break;
@@ -1090,19 +1195,58 @@ function render(){
     default:html=todayView();
   }
   document.body.innerHTML=html+tabs();
-  restoreScroll();
+  lastRenderedTab=tab;
+  if(keepY!==null){
+    window.scrollTo(0,keepY);
+    requestAnimationFrame(()=>window.scrollTo(0,keepY));
+  }else{
+    restoreScroll();
+  }
 }
 
 /* ── Global helpers ── */
 function toggleById(id){let h=habits.find(x=>x.id===id);if(h)toggle(h);}
 function limitIncById(id){let h=habits.find(x=>x.id===id);if(h)limitInc(h);}
 function limitDecById(id){let h=habits.find(x=>x.id===id);if(h)limitDec(h);}
+function limitZeroById(id){let h=habits.find(x=>x.id===id);if(h)limitConfirmZero(h);}
 function changeMonth(n){month=new Date(month.getFullYear(),month.getMonth()+n,1);render();}
 
 function toggleTodo(id){
   let t=todos.find(x=>x.id===id);
-  if(t){t.done=!t.done;save();render();}
+  if(t){
+    t.done=!t.done;
+    if(t.done)t.doneAt=new Date().toISOString();   // v2.2: needed for the 24h cleanup
+    else delete t.doneAt;
+    save();render();
+  }
 }
+/* v2.2: completed todos disappear 24 hours after they were ticked. */
+const TODO_KEEP_MS=24*60*60*1000;
+function purgeOldTodos(){
+  const now=Date.now();
+  const before=todos.length;
+  todos=todos.filter(t=>{
+    if(!t.done)return true;
+    if(!t.doneAt){t.doneAt=new Date().toISOString();return true;}  // legacy: start the clock now
+    const ts=Date.parse(t.doneAt);
+    if(isNaN(ts))return true;
+    return (now-ts)<TODO_KEEP_MS;
+  });
+  if(todos.length!==before)save();
+}
+/* v2.2: move a todo between AKTUELL (0) and the four quadrants. */
+function moveTodo(id,q){
+  const t=todos.find(x=>x.id===id);
+  if(!t)return;
+  t.q=q;
+  pickerTodoId=null;
+  save();render();
+}
+function togglePicker(id){
+  pickerTodoId = (pickerTodoId===id) ? null : id;
+  render();
+}
+let pickerTodoId=null;
 function delTodo(id){
   if(!confirm("Aufgabe löschen?"))return;
   todos=todos.filter(x=>x.id!==id);save();render();
@@ -1292,6 +1436,7 @@ document.addEventListener("visibilitychange",()=>{
   if(!document.hidden && tab==="today")render();
 });
 startSinceTimer();
+purgeOldTodos();
 save();render();
 </script>
 </body>
