@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v2.2</title>
+<title>HabitDOS HTML v3.0</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{background:#0a0a0a;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -57,15 +57,18 @@ hr{border:0;border-top:1px solid #2a2a2a;margin:18px 0 22px}
 
 /* ── Navigation ── */
 nav{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#0a0a0a;border-top:2px solid #1a1a1a;display:flex;padding:8px max(6px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom))}
-nav button{flex:1;background:none;border:0;color:#555;padding:14px 2px;font:inherit;font-size:10px;letter-spacing:.06em;font-weight:800;text-transform:uppercase;transition:none;position:relative}
+nav button{flex:1;background:none;border:0;color:#555;padding:13px 1px;font:inherit;font-size:13.5px;letter-spacing:.02em;font-weight:800;text-transform:uppercase;transition:none;position:relative;white-space:nowrap;overflow:hidden}
 nav button.sel{color:#00ff41;font-weight:800;background:#111;border-top:2px solid #00ff41;margin-top:-2px}
 nav button.sel::before{content:"> "}
+/* v3.0: die Seite hinter dem offenen Menü — erkennbar, aber nicht als "angetippt" */
+nav button.cur{color:#2e7d3f;background:#0d0d0d;border-top:2px solid #1f5c2c;margin-top:-2px}
+nav button.cur::before{content:"> "}
 nav button:active{color:#888;background:#151515}
 
 .nav-more{flex:1;position:relative}
 .nav-more>button{width:100%}
 .nav-pop{position:absolute;bottom:58px;right:4px;background:#0a0a0a;border:1px solid #333;min-width:140px;padding:4px;box-shadow:0 4px 20px rgba(0,0,0,.8)}
-.nav-pop button{display:block;width:100%;text-align:left;background:#111;color:#888;border:0;padding:12px;font:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.nav-pop button{display:block;width:100%;text-align:left;background:#111;color:#888;border:0;padding:13px;font:inherit;font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 .nav-pop button.sel{color:#00ff41;background:#1a1a1a}
 .nav-pop button:active{background:#222}
 
@@ -253,13 +256,98 @@ nav button:active{color:#888;background:#151515}
 .tpick button{background:#1c1c1c;border:1px solid #5a5a5a;color:#ddd;font:inherit;font-size:9px;padding:9px 8px;min-height:38px;letter-spacing:.04em}
 .tpick button.sel{border-color:#69ff69;color:#69ff69;font-weight:800}
 .tpick .tpdel{border-color:#6b3f3f;color:#e6a5a5;margin-left:auto}
+/* ── v2.6: Eisenhower-Matrix — vier Quadranten auf einem Bildschirm ──
+   Wichtigkeit wird über Dunkelheit codiert: I am dunkelsten, IV am hellsten.
+   Dazu ein gedämpfter Farbakzent je Quadrant für die schnelle Orientierung. */
+.todoscreen{height:calc(100dvh - 92px);max-width:640px;margin:auto;
+  padding:14px 14px 0;display:flex;flex-direction:column;gap:9px}
+@supports not (height: 100dvh){ .todoscreen{height:calc(100vh - 92px)} }
+.tdhead{flex:0 0 auto}
+.tdhead .brand{font-size:10px;letter-spacing:.2em;color:#777}
+.tdstat{display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:5px;padding-bottom:7px;border-bottom:1px solid #4a4a4a}
+.tdtitle{font-size:14px;font-weight:800;letter-spacing:.14em;display:flex;align-items:center;gap:6px}
+.tdnums{font-size:10px;letter-spacing:.08em;color:#8a8a8a}
+.todoscreen .quickrow{flex:0 0 auto;margin:0}
+.todoscreen .quickrow input{padding:11px 12px;font-size:16px}
+.todoscreen .quickrow button{width:50px;font-size:20px}
+/* Eingang: kompakt, wächst nur bis zu einer festen Höhe */
+.quad.inbox{flex:0 0 auto;max-height:118px;display:flex;flex-direction:column;
+  margin:0;border-color:#6e6e6e;background:#1a1a1a}
+.quad.inbox .qbody{flex:1;min-height:0;overflow-y:auto;max-height:none}
+.quad.inbox .qnum{color:#69ff69}
+/* Die Matrix nimmt den gesamten verbleibenden Platz ein */
+.matrix{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;gap:7px;margin:0 0 9px}
+.quad{display:flex;flex-direction:column;min-height:0;overflow:hidden;
+  border:1px solid #4a4a4a;padding:0;background:#212121}
+.qh2{flex:0 0 auto;display:grid;grid-template-columns:14px 1fr auto;gap:6px;align-items:center;
+  padding:7px 8px 6px;border-bottom:1px solid rgba(255,255,255,.07)}
+.qnum{font-size:10px;font-weight:800;text-align:center;line-height:1}
+.qlab{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.qlab b{font-size:8.5px;font-weight:800;letter-spacing:.07em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qlab i{font-size:8px;font-style:normal;letter-spacing:.05em;color:#8a8a8a;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qcount{font-size:11px;font-weight:800;min-width:12px;text-align:right}
+.qbody{flex:1;min-height:0;overflow-y:auto;padding:3px 8px 7px}
+/* Quadrant I — wichtigste, dunkelste Fläche, roter Akzent */
+.quad.q1{background:#0d0d0d;border-color:#7a4a4a}
+.quad.q1 .qnum,.quad.q1 .qcount,.quad.q1 .qlab b{color:#e88}
+/* Quadrant II — bernstein */
+.quad.q2{background:#191919;border-color:#7a6a3f}
+.quad.q2 .qnum,.quad.q2 .qcount,.quad.q2 .qlab b{color:#d9b264}
+/* Quadrant III — blau */
+.quad.q3{background:#242424;border-color:#4f6478}
+.quad.q3 .qnum,.quad.q3 .qcount,.quad.q3 .qlab b{color:#8ab4d8}
+/* Quadrant IV — hellste Fläche, neutral */
+.quad.q4{background:#2e2e2e;border-color:#5a5a5a}
+.quad.q4 .qnum,.quad.q4 .qcount,.quad.q4 .qlab b{color:#a8a8a8}
+/* Aufgabenzeilen */
+.todo-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+.todo-item:last-child{border:0}
+.tbox{background:none;border:0;padding:4px 4px 4px 0;margin:-4px 0 -4px -2px;color:#ddd;
+  line-height:1;font-size:11px;font-weight:800;flex:0 0 auto}
+.ttext{flex:1;min-width:0;font-size:11px;line-height:1.3;word-break:break-word;
+  color:#e6e6e6;cursor:pointer;padding:1px 0}
+.todo-item.done .ttext{color:#6d6d6d;text-decoration:line-through}
+.todo-item.done .tbox{color:#69ff69}
+.qempty{font-size:9.5px;color:#5a5a5a;padding:6px 0}
+.tpick{display:flex;flex-wrap:wrap;gap:4px;padding:4px 0 7px}
+.tpick button{background:#171717;border:1px solid #5a5a5a;color:#ddd;font:inherit;font-size:9px;
+  padding:7px 8px;min-height:34px;min-width:32px;letter-spacing:.04em}
+.tpick button.sel{border-color:#69ff69;color:#69ff69;font-weight:800}
+.tpick .tpdel{border-color:#6b3f3f;color:#e6a5a5;margin-left:auto;font-size:8.5px}
+/* v2.7: Matrix-Zeichen im Reiter — Ersatzschriften skalieren es anders,
+   deshalb Größe und Grundlinie hier explizit festlegen. */
+.navglyph{display:inline-block;font-size:19.5px;line-height:1;vertical-align:-3px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Segoe UI Symbol",monospace}
+nav button.sel .navglyph{font-weight:800}
+/* v2.4: Tagesabschluss-Meldung */
+.dayoverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.82);opacity:0;transition:opacity .22s ease}
+.dayoverlay.on{opacity:1}
+.dobox{border:1px solid #69ff69;background:#0d0d0d;padding:26px 24px;max-width:88vw;
+  transform:translateY(6px);transition:transform .22s ease}
+.dayoverlay.on .dobox{transform:translateY(0)}
+.doline{font-size:12px;letter-spacing:.14em;color:#69ff69;margin-bottom:16px}
+.dobar{font-size:13px;letter-spacing:1px;color:#69ff69;word-break:break-all;line-height:1;
+  text-shadow:0 0 10px rgba(105,255,105,.35)}
+.dopct{font-size:44px;font-weight:800;color:#69ff69;line-height:1;margin-top:12px;letter-spacing:-.02em}
+.dostreak{font-size:11px;letter-spacing:.12em;color:#9a9a9a;margin-top:10px}
+.docur{margin-top:14px}
+@media (prefers-reduced-motion: reduce){
+  .dayoverlay,.dobox{transition:none}
+  .cursor{animation:none}
+}
 </style>
 <base target="_blank">
 </head>
 <body>
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   HABITDOS v2.2 — Terminal Habit Tracker
+   HABITDOS v3.0 — Terminal Habit Tracker
    ═══════════════════════════════════════════════════════════════ */
 
 const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
@@ -270,7 +358,7 @@ function getStore(k,f){try{let v=localStorage.getItem(k);if(v!==null)return JSON
 function putStore(k,v){MEM[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}try{sessionStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
 const uid=()=>Date.now()+"-"+Math.random().toString(36).slice(2);
-const APP_VERSION="2.2";
+const APP_VERSION="3.0";
 const cloneFreq=f=>JSON.parse(JSON.stringify(f));
 const isoDate=d=>k(d);
 
@@ -416,13 +504,120 @@ const k=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const parse=s=>{let [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
 const add=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+n);return day(x)};
 const mon=d=>{let x=day(d),n=(x.getDay()+6)%7;x.setDate(x.getDate()-n);return x};
-const today=()=>day(new Date()),weekdays=["SO","MO","DI","MI","DO","FR","SA"];
+/* ── v2.5: Der Tag wechselt um 03:00 Uhr, nicht um Mitternacht ──
+   Alles zwischen 00:00 und 02:59 zählt noch zum Vortag. Die Umrechnung
+   passiert an genau dieser Stelle; alle übrigen Berechnungen benutzen
+   today() und logicalDay() und sind dadurch automatisch richtig. */
+const DAY_ROLLOVER_HOUR=3;
+// Rechnet einen echten Zeitpunkt auf den Tag um, zu dem er zählt.
+const logicalDay=d=>day(new Date(d.getTime()-DAY_ROLLOVER_HOUR*3600000));
+const today=()=>logicalDay(new Date()),weekdays=["SO","MO","DI","MI","DO","FR","SA"];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 function bar(done,target,w=14){
   if(!target)return"·".repeat(w);
   let f=Math.max(0,Math.min(w,Math.round((done/target)*w)));
   return "█".repeat(f)+"░".repeat(w-f);
+}
+/* ── v2.4: Animationen ──
+   Alle Effekte laufen NACH dem Rendern auf dem fertigen DOM und verändern
+   niemals Daten. Bei aktivierter Systemeinstellung "Bewegung reduzieren"
+   werden sie komplett übersprungen. */
+function barFill(done,target,w){
+  if(!target)return -1;                       // -1 = "keine Daten" (Punkte-Balken)
+  return Math.max(0,Math.min(w,Math.round((done/target)*w)));
+}
+function reducedMotion(){
+  try{return window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches}
+  catch(e){return false}
+}
+let animPrev={};              // zuletzt gezeigte Werte je Element-Schlüssel
+let justToggledId=null;       // Habit, der gerade angetippt wurde
+let prevDayDone=null;         // war der Tag beim letzten Rendern schon komplett?
+
+function animateNumber(el,from,to,suffix,ms){
+  if(from===to||!(ms>0)){el.textContent=to+suffix;return}
+  const start=performance.now();
+  let frames=0;
+  function step(now){
+    const p=Math.min(1,(now-start)/ms);
+    const eased=1-Math.pow(1-p,3);            // schnell anlaufen, sanft auslaufen
+    el.textContent=Math.round(from+(to-from)*eased)+suffix;
+    // Sicherheitsnetz: endet auch, falls die Zeitquelle nicht fortschreitet
+    if(p<1&&++frames<120)requestAnimationFrame(step);
+    else el.textContent=to+suffix;
+  }
+  requestAnimationFrame(step);
+}
+function animateBar(el,from,to,w,ms){
+  if(from===to||from<0||to<0){return}
+  const steps=Math.abs(to-from);
+  const per=Math.max(40,Math.min(90,ms/Math.max(1,steps)));
+  let cur=from;
+  const dir=to>from?1:-1;
+  function tick(){
+    cur+=dir;
+    el.textContent="█".repeat(Math.max(0,cur))+"░".repeat(Math.max(0,w-cur));
+    if(cur!==to)setTimeout(tick,per);
+  }
+  el.textContent="█".repeat(Math.max(0,from))+"░".repeat(Math.max(0,w-from));
+  setTimeout(tick,per);
+}
+function animateCheckbox(wrap){
+  const el=wrap.querySelector(".chk")||wrap;   // Farbklasse muss erhalten bleiben
+  const final=el.textContent;
+  if(final.indexOf("X")<0)return;              // nur beim Abhaken, nicht beim Lösen
+  el.textContent="[·]";
+  setTimeout(()=>{el.textContent=final},110);
+}
+function showDayComplete(streak){
+  if(document.querySelector(".dayoverlay"))return;
+  const ov=document.createElement("div");
+  ov.className="dayoverlay";
+  ov.innerHTML=`<div class="dobox"><div class="doline">&gt; TAG ABGESCHLOSSEN</div>`+
+    `<div class="dobar">${"█".repeat(20)}</div>`+
+    `<div class="dopct">100%</div>`+
+    (streak>=2?`<div class="dostreak">SERIE: ${streak} TAGE</div>`:"")+
+    `<div class="docur"><span class="cursor"></span></div></div>`;
+  ov.addEventListener("click",()=>ov.remove());
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>ov.classList.add("on"));
+  setTimeout(()=>{ov.classList.remove("on");setTimeout(()=>ov.remove(),260)},1700);
+}
+function runAnimations(){
+  const skip=reducedMotion();
+  // 1) Prozentzahl hochzählen
+  document.querySelectorAll(".hero-pct[data-pct]").forEach(el=>{
+    const to=Number(el.getAttribute("data-pct"));
+    const suffix=el.getAttribute("data-suffix")||"";
+    const key="pct:"+tab;
+    const from=(animPrev[key]==null)?to:animPrev[key];
+    animPrev[key]=to;
+    if(!skip)animateNumber(el,from,to,suffix,420);
+    else el.textContent=to+suffix;
+  });
+  // 2) Balken füllen
+  document.querySelectorAll(".hero-bar[data-fill]").forEach(el=>{
+    const to=Number(el.getAttribute("data-fill"));
+    const w=Number(el.getAttribute("data-w"))||20;
+    const key="bar:"+tab;
+    const from=(animPrev[key]==null)?to:animPrev[key];
+    animPrev[key]=to;
+    if(!skip)animateBar(el,from,to,w,320);
+  });
+  // 3) Kästchen-Mikroanimation auf dem gerade angetippten Habit
+  if(justToggledId&&!skip){
+    const el=document.querySelector(`[data-habit-chk="${CSS&&CSS.escape?CSS.escape(justToggledId):justToggledId}"]`);
+    if(el)animateCheckbox(el);
+  }
+  justToggledId=null;
+  // 4) Tagesabschluss — nur beim Übergang auf 100 %, nicht bei jedem Öffnen
+  if(tab==="today"){
+    const p=todayProgress();
+    const nowDone=(p.target>0&&p.p===100);
+    if(prevDayDone===false&&nowDone&&!skip)showDayComplete(globalStreak());
+    prevDayDone=nowDone;
+  }
 }
 function msgBanner(t){return`<div class="milestone">*** ${esc(t)} ***</div>`}
 function milestoneBanner(n){
@@ -476,7 +671,8 @@ function limitStartDate(h){
     .filter(r=>r.h===h.id&&typeof r.count==="number")
     .map(r=>r.d).sort();
   if(logged.length)return parse(logged[0]);
-  if(h.created)return parse(h.created.slice(0,10));
+  if(h.createdDay)return parse(h.createdDay);            // v2.5: logischer Tag, zeitzonensicher
+  if(h.created)return logicalDay(new Date(h.created));   // Rückfall für ältere Einträge
   return today();
 }
 function limitActiveOn(h,d){return isoDate(d)>=isoDate(limitStartDate(h));}
@@ -564,7 +760,7 @@ function limitSinceText(h,now=new Date()){
   if(!last||isNaN(last))return "NOCH NICHT ERFASST";
   const rawMin=Math.floor((now-last)/60000);
   if(rawMin<0)return "GERADE EBEN";                       // clock moved back
-  const dayDiff=Math.round((day(now)-day(last))/86400000);
+  const dayDiff=Math.round((logicalDay(now)-logicalDay(last))/86400000);
   if(dayDiff===1)return "GESTERN";
   if(dayDiff>1)return `VOR ${dayDiff} TAGEN`;
   if(rawMin<5)return "GERADE EBEN";
@@ -652,11 +848,14 @@ function header(t,s=""){
 }
 
 function summary(x,l="WEEK"){
-  return`<div class="hero"><div class="hero-top"><small>${l}</small><span class="hero-pct">${x.p}%</span></div><div class="hero-bar">${bar(x.done,x.target,20)}</div><div class="hero-sub">${x.done} / ${x.target} erledigt</div></div>`;
+  return`<div class="hero"><div class="hero-top"><small>${l}</small><span class="hero-pct" data-pct="${x.p}" data-suffix="%">${x.p}%</span></div><div class="hero-bar" data-fill="${barFill(x.done,x.target,20)}" data-w="20">${bar(x.done,x.target,20)}</div><div class="hero-sub">${x.done} / ${x.target} erledigt</div></div>`;
 }
 
-function qlabel(q){return{1:"WICHTIG · DRINGEND",2:"WICHTIG · NICHT DRINGEND",3:"DRINGEND · NICHT WICHTIG",4:"WEDER NOCH"}[q]}
-function qhint(q){return{1:"SOFORT",2:"PLANEN",3:"DELEGIEREN",4:"STREICHEN"}[q]}
+function qlabel(q){return{0:"AKTUELL",1:"WICHTIG · DRINGEND",2:"WICHTIG · NICHT DRINGEND",3:"DRINGEND · NICHT WICHTIG",4:"WEDER NOCH"}[q]}
+function qhint(q){return{0:"UNSORTIERT",1:"SOFORT",2:"PLANEN",3:"DELEGIEREN",4:"STREICHEN"}[q]}
+/* v2.6: kompakte Zweizeiler für die enge 2x2-Ansicht */
+function qshort(q){return{1:["WICHTIG","DRINGEND"],2:["WICHTIG","NICHT DRINGEND"],3:["DRINGEND","NICHT WICHTIG"],4:["WEDER","NOCH"]}[q]}
+function qroman(q){return{1:"I",2:"II",3:"III",4:"IV"}[q]}
 
 function sofortSection(){
   let items=todos.filter(t=>t.q===1&&!t.done);
@@ -687,7 +886,7 @@ function todayView(){
         : "";
       return `<div class="card habit limit${stateCls} noswipe"><div class="row"><b>${esc(h.name)}</b>${badge}</div><div class="counter limitctr noswipe"><button onclick="limitDecById('${esc(h.id)}')">−</button><b>${c} heute</b><button onclick="limitIncById('${esc(h.id)}')">+</button></div>${zeroBtn}<div class="meta"><span class="since" data-since-habit="${esc(h.id)}">LETZTE: ${limitSinceText(h)}</span><span>${statusTxt}</span></div></div>`;
     }
-    return `<button class="card habit" onclick="toggleById('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b>${mark(h,today())}</div><div class="meta"><span>${ftxt(h)}</span></div></button>`;
+    return `<button class="card habit" onclick="toggleById('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b><span data-habit-chk="${esc(h.id)}">${mark(h,today())}</span></div><div class="meta"><span>${ftxt(h)}</span></div></button>`;
   }).join("") : `<div class="hint">Heute stehen keine festen Habits an.</div>`;
   // Flexible block (optional, does not count toward TODAY %)
   let flexBlock = "";
@@ -696,10 +895,10 @@ function todayView(){
       const p=weekProgVersioned(h,today());
       const doneToday=done(h,today());
       const reached=p.done>=p.target;
-      return `<button class="card habit flex${reached?' flexdone':''}" onclick="toggleById('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b>${doneToday?'<span class="chk donegreen">[X]</span>':'<span class="chk">[ ]</span>'}</div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${p.done}/${p.target} THIS WEEK${reached?' · ZIEL ERREICHT':''}</span></div></button>`;
+      return `<button class="card habit flex${reached?' flexdone':''}" onclick="toggleById('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b><span data-habit-chk="${esc(h.id)}">${doneToday?'<span class="chk donegreen">[X]</span>':'<span class="chk">[ ]</span>'}</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${p.done}/${p.target} THIS WEEK${reached?' · ZIEL ERREICHT':''}</span></div></button>`;
     }).join("")}`;
   }
-  return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${streakLine}<div class="hero"><div class="hero-top"><small>TODAY</small><span class="hero-pct">${x.p}%</span></div><div class="hero-bar">${bar(x.done,x.target,20)}</div><div class="hero-sub">${heroSub}</div></div>${milestoneBanner(streak)}${sofortSection()}${oblCards}${flexBlock}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`;
+  return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${streakLine}<div class="hero"><div class="hero-top"><small>TODAY</small><span class="hero-pct" data-pct="${x.p}" data-suffix="%">${x.p}%</span></div><div class="hero-bar" data-fill="${barFill(x.done,x.target,20)}" data-w="20">${bar(x.done,x.target,20)}</div><div class="hero-sub">${heroSub}</div></div>${milestoneBanner(streak)}${sofortSection()}${oblCards}${flexBlock}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`;
 }
 
 function weekStatus(wStart){
@@ -942,27 +1141,39 @@ function habitHistoryView(){
 }
 
 function habitsView(){
-  return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>{let s=habitStats(h);return`<button class="card habit" onclick="editor('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span><span>${s.p}%</span><span>STREAK ${s.current}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="showHabitStats()">STATISTIK</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary danger" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v${APP_VERSION} · OFFLINE · WEEK bleibt reine Übersicht.</div></main>`;
+  return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>{let s=habitStats(h);return`<button class="card habit" onclick="editor('${esc(h.id)}')"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span><span>${s.p}%</span><span>STREAK ${s.current}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="showHabitStats()">STATISTIK</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary danger" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v${APP_VERSION} · TAGESWECHSEL ${String(DAY_ROLLOVER_HOUR).padStart(2,"0")}:00 · ${offlineStatusText()}</div></main>`;
 }
 
 /* v2.2: one renderer for every todo row, with an inline bucket picker. */
-function todoRow(t,compact){
+function todoRow(t){
   const picker = (pickerTodoId===t.id) ? `<div class="tpick">${
-      [[0,"AKTUELL"],[1,"W+D"],[2,"W"],[3,"D"],[4,"–"]]
-        .map(([q,lbl])=>`<button class="${t.q===q?'sel':''}" onclick="moveTodo('${esc(t.id)}',${q})">${lbl}</button>`).join("")
+      [[0,"AKTUELL"],[1,"I"],[2,"II"],[3,"III"],[4,"IV"]]
+        .map(([q,lbl])=>`<button class="${(t.q??0)===q?'sel':''}" onclick="moveTodo('${esc(t.id)}',${q})">${lbl}</button>`).join("")
     }<button class="tpdel" onclick="delTodo('${esc(t.id)}')">LÖSCHEN</button></div>` : "";
-  return `<div class="todo-item ${t.done?"done":""}"><button class="tbox" onclick="toggleTodo('${esc(t.id)}')">${t.done?"[X]":"[ ]"}</button><span class="ttext" onclick="togglePicker('${esc(t.id)}')">${esc(t.text)}</span><button class="tmove" onclick="togglePicker('${esc(t.id)}')">⋯</button></div>${picker}`;
+  return `<div class="todo-item ${t.done?"done":""}">`+
+    `<button class="tbox" onclick="toggleTodo('${esc(t.id)}')">${t.done?"[X]":"[ ]"}</button>`+
+    `<span class="ttext" onclick="togglePicker('${esc(t.id)}')">${esc(t.text)}</span>`+
+    `</div>${picker}`;
 }
 function quadrant(q){
-  let items=todos.filter(t=>t.q===q).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);
-  return`<div class="quad"><div class="qh"><b>${qlabel(q)}</b><small>${qhint(q)} · ${items.length}</small></div>${items.length?items.map(t=>todoRow(t,true)).join(""):'<div class="qempty">–</div>'}</div>`;
+  const items=todos.filter(t=>t.q===q).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);
+  const open=items.filter(t=>!t.done).length;
+  const [l1,l2]=qshort(q);
+  return`<div class="quad q${q}">`+
+    `<div class="qh2"><span class="qnum">${qroman(q)}</span>`+
+      `<span class="qlab"><b>${l1}</b><i>${l2}</i></span>`+
+      `<span class="qcount">${open}</span></div>`+
+    `<div class="qbody">${items.length?items.map(t=>todoRow(t)).join(""):'<div class="qempty">–</div>'}</div>`+
+  `</div>`;
 }
 /* AKTUELL = quick inbox (q:0), not yet sorted into the matrix */
 function inboxSection(){
   const items=todos.filter(t=>(t.q??0)===0).sort((a,b)=>(a.done===b.done)?0:a.done?1:-1);
-  return `<div class="quad inbox"><div class="qh"><b>AKTUELL</b><small>UNSORTIERT · ${items.length}</small></div>${
-    items.length?items.map(t=>todoRow(t,false)).join(""):'<div class="qempty">Nichts offen. Oben eintippen und mit Enter hinzufügen.</div>'
-  }</div>`;
+  const open=items.filter(t=>!t.done).length;
+  return `<div class="quad inbox"><div class="qh2"><span class="qnum">&gt;</span>`+
+    `<span class="qlab"><b>AKTUELL</b><i>UNSORTIERT</i></span>`+
+    `<span class="qcount">${open}</span></div>`+
+    `<div class="qbody">${items.length?items.map(t=>todoRow(t)).join(""):'<div class="qempty">Nichts offen. Oben eintippen, Enter drückt ab.</div>'}</div></div>`;
 }
 function quickAddTodo(){
   const el=document.getElementById("quickadd");
@@ -979,20 +1190,40 @@ function quickAddKey(e){ if(e.key==="Enter"){e.preventDefault();quickAddTodo();}
 
 function todoView(){
   purgeOldTodos();
-  let open=todos.filter(t=>!t.done).length,doneN=todos.filter(t=>t.done).length,tt=open+doneN;
+  const open=todos.filter(t=>!t.done).length;
   const inboxOpen=todos.filter(t=>(t.q??0)===0&&!t.done).length;
-  return`<main>${header("TODO","Eisenhower-Matrix · einmalige Aufgaben")}<div class="hero"><div class="hero-top"><small>OFFEN</small><span class="hero-pct">${open}</span></div><div class="hero-bar">${bar(doneN,tt||1,20)}</div><div class="hero-sub">${doneN} von ${tt} erledigt${inboxOpen?` · ${inboxOpen} unsortiert`:""}</div></div><div class="quickrow noswipe"><input id="quickadd" placeholder="Schnell eintragen…" onkeydown="quickAddKey(event)" autocomplete="off"><button onclick="quickAddTodo()">+</button></div>${inboxSection()}<div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div><div class="hint">AKTUELL ist der schnelle Eingang. Über ⋯ verschiebst du eine Aufgabe in die Matrix. Erledigtes verschwindet nach 24 Stunden von selbst.</div></main>`;
+  const q1=todos.filter(t=>t.q===1&&!t.done).length;
+  // v2.6: fester Bildschirm — Kopf schlank, Matrix füllt den Rest.
+  return`<main class="todoscreen">`+
+    `<div class="tdhead"><div class="brand">HABITDOS</div>`+
+      `<div class="tdstat"><span class="tdtitle">&gt; MATRIX<span class="cursor"></span></span>`+
+      `<span class="tdnums">${open} OFFEN${q1?` · ${q1} SOFORT`:""}</span></div></div>`+
+    `<div class="quickrow noswipe"><input id="quickadd" placeholder="Schnell eintragen…" onkeydown="quickAddKey(event)" autocomplete="off"><button onclick="quickAddTodo()">+</button></div>`+
+    (inboxOpen||todos.some(t=>(t.q??0)===0)?inboxSection():"")+
+    `<div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div>`+
+  `</main>`;
 }
-
-/* ── Tab Order for Swipe ── */
 const TAB_ORDER = ["today","todo","week","month","history","habits","stats"];
 const MORE_TABS = ["history","habits","stats"];
-
 function tabs(){
-  const main=[["today","TODAY"],["todo","TODO"],["week","WEEK"],["month","MONTH"]];
+  const main=[["today","TODAY"],["todo",'<span class="navglyph">⊞</span>'],["week","WEEK"],["month","MONTH"]];
   const more=[["history","HISTORY"],["habits","HABITS"],["stats","STATS"]];
-  const moreSel=MORE_TABS.includes(tab);
-  return `<nav>${main.map(x=>`<button class="${tab===x[0]?"sel":""}" onclick="setTab('${x[0]}')">${x[1]}</button>`).join("")}<div class="nav-more"><button class="${moreSel?"sel":""}" onclick="toggleMore()">MORE</button>${moreSel||window._moreOpen?`<div class="nav-pop">${more.map(x=>`<button class="${tab===x[0]?"sel":""}" onclick="setTab('${x[0]}');window._moreOpen=false">${x[1]}</button>`).join("")}</div>`:""}</div></nav>`;
+  const moreSel=MORE_TABS.includes(tab);          // ein Unterpunkt ist die aktive Seite
+  const moreOpen=!!window._moreOpen;              // das Menü ist gerade aufgeklappt
+  /* v3.0: drei eindeutige Zustände statt zwei.
+     sel = grün, das ist gerade angetippt/aktiv
+     cur = gedämpft, das ist die Seite dahinter, während das Menü offen ist
+     (leer) = inaktiv */
+  const mainBtns=main.map(x=>{
+    const isCur=(tab===x[0]);
+    const cls=isCur ? (moreOpen ? "cur" : "sel") : "";
+    return `<button class="${cls}" onclick="setTab('${x[0]}')">${x[1]}</button>`;
+  }).join("");
+  const moreCls=(moreOpen||moreSel) ? "sel" : "";
+  const pop=(moreOpen||moreSel)
+    ? `<div class="nav-pop">${more.map(x=>`<button class="${tab===x[0]?"sel":""}" onclick="setTab('${x[0]}');window._moreOpen=false">${x[1]}</button>`).join("")}</div>`
+    : "";
+  return `<nav>${mainBtns}<div class="nav-more"><button class="${moreCls}" onclick="toggleMore()">MORE</button>${pop}</div></nav>`;
 }
 
 function toggleMore(){window._moreOpen=!window._moreOpen;render()}
@@ -1015,6 +1246,7 @@ function normalizeImportedHabit(h){
     arch:!!h.arch,
     created:(typeof h.created==="string"&&h.created)?h.created:new Date().toISOString()
   };
+  if(typeof h.createdDay==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(h.createdDay))out.createdDay=h.createdDay;
   let f=(h.freq&&VALID_TYPES.includes(h.freq.type))?h.freq:{type:"daily"};
   if(f.type==="times")f={type:"times",count:Math.max(1,Math.min(7,Number(f.count)||3))};
   else if(f.type==="limit")f={type:"limit",max:Math.max(0,Math.min(99,Number(f.max)??5))};
@@ -1202,10 +1434,11 @@ function render(){
   }else{
     restoreScroll();
   }
+  try{runAnimations()}catch(e){}   // v2.4: Animationen dürfen nie die App blockieren
 }
 
 /* ── Global helpers ── */
-function toggleById(id){let h=habits.find(x=>x.id===id);if(h)toggle(h);}
+function toggleById(id){let h=habits.find(x=>x.id===id);if(h){justToggledId=id;toggle(h);}}
 function limitIncById(id){let h=habits.find(x=>x.id===id);if(h)limitInc(h);}
 function limitDecById(id){let h=habits.find(x=>x.id===id);if(h)limitDec(h);}
 function limitZeroById(id){let h=habits.find(x=>x.id===id);if(h)limitConfirmZero(h);}
@@ -1374,7 +1607,7 @@ function saveHabit(){
       h.name=name;h.freq=freq;
     }
   }else{
-    habits.push({id:uid(),name,freq,arch:false,created:new Date().toISOString(),versions:[{from:"2000-01-01",freq:cloneFreq(freq)}]});
+    habits.push({id:uid(),name,freq,arch:false,created:new Date().toISOString(),createdDay:k(today()),versions:[{from:"2000-01-01",freq:cloneFreq(freq)}]});
   }
   save();render();
 }
@@ -1428,13 +1661,54 @@ function refreshSinceLabels(){
     if(h)el.textContent="LETZTE: "+limitSinceText(h);
   });
 }
+let lastSeenDay=null;
 function startSinceTimer(){
   if(sinceTimer)clearInterval(sinceTimer);
-  sinceTimer=setInterval(refreshSinceLabels,60000);
+  lastSeenDay=k(today());
+  sinceTimer=setInterval(()=>{
+    // v2.5: Läuft die App über die 03:00-Grenze, den neuen Tag übernehmen.
+    const nowDay=k(today());
+    if(nowDay!==lastSeenDay){lastSeenDay=nowDay;prevDayDone=null;render();return}
+    refreshSinceLabels();
+  },60000);
 }
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden && tab==="today")render();
 });
+/* ── v2.3: Offline-Betrieb via Service Worker ──
+   Nach dem ersten Laden liegt die App auf dem Gerät und startet ohne Netz.
+   Schlägt die Registrierung fehl (z.B. bei file:// oder ohne HTTPS), läuft
+   alles unverändert weiter — nur eben ohne Offline-Start. */
+let swState = "unsupported";
+function initServiceWorker(){
+  if(!("serviceWorker" in navigator))return;
+  swState = "pending";
+  navigator.serviceWorker.register("./sw.js")
+    .then(reg=>{
+      swState = navigator.serviceWorker.controller ? "ready" : "installing";
+      reg.addEventListener("updatefound",()=>{
+        const nw=reg.installing;
+        if(!nw)return;
+        nw.addEventListener("statechange",()=>{
+          if(nw.state==="installed"&&navigator.serviceWorker.controller){
+            swState="update";        // neue Version liegt bereit
+            if(tab==="habits")render();
+          }
+        });
+      });
+      if(tab==="habits")render();
+    })
+    .catch(()=>{ swState="failed"; });
+}
+function offlineStatusText(){
+  if(swState==="ready")return "OFFLINE BEREIT · App liegt auf dem Gerät";
+  if(swState==="installing")return "OFFLINE WIRD VORBEREITET · beim nächsten Start aktiv";
+  if(swState==="update")return "NEUE VERSION GELADEN · beim nächsten Start aktiv";
+  if(swState==="failed")return "OFFLINE NICHT AKTIV · App lädt bei jedem Start neu";
+  if(swState==="unsupported")return "OFFLINE NICHT VERFÜGBAR";
+  return "OFFLINE WIRD GEPRÜFT…";
+}
+initServiceWorker();
 startSinceTimer();
 purgeOldTodos();
 save();render();
