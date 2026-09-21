@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v3.2</title>
+<title>HabitDOS HTML v3.3</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{background:#0a0a0a;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -327,6 +327,38 @@ nav button.sel .navglyph{font-weight:800}
 /* v3.1: Warnung bei Speicherfehler */
 .storewarn{position:sticky;top:0;z-index:40;background:#3a1212;color:#ffb3b3;border-bottom:1px solid #a33;
   padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));font-size:11px;letter-spacing:.04em}
+/* ── v3.3: TODAY als Terminal-Liste ── */
+main.tl{padding:0 12px 16px}
+.tlsticky{position:sticky;top:0;z-index:20;background:#0a0a0a;margin:0 -12px;padding:0 12px;border-bottom:1px solid #1f1f1f}
+.tlhead{display:flex;justify-content:space-between;align-items:baseline;padding:14px 4px 4px}
+.tltitle{font-size:16px;font-weight:800;letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+.tldate{font-size:12px;color:#666;letter-spacing:.06em}
+.tlstat{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 10px;font-size:13px}
+.tlstat .hero-pct{font-size:20px;font-weight:800;line-height:1;letter-spacing:-.01em;color:#fff}
+.tlstat .hero-bar{font-size:13px;letter-spacing:1px;color:#00ff41;margin:0;word-break:normal}
+.tlstatr{font-size:12px;color:#666;letter-spacing:.04em}
+.tlsec{font-size:11px;color:#555;letter-spacing:.12em;padding:16px 4px 4px;display:flex;align-items:center;gap:8px;font-weight:800}
+.tlsec::after{content:"";flex:1;border-top:1px solid #222}
+.tlrow{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:0 4px;margin:0;
+  background:none;border:0;border-bottom:1px solid #181818;color:#e6e6e6;font:inherit;font-size:15px;text-align:left}
+button.tlrow:active{background:#151515}
+.tlck{flex:0 0 auto;font-weight:800;min-width:28px}
+.tlname{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlmeta{flex:0 0 auto;font-size:11px;color:#555;letter-spacing:.04em}
+.tlrow.done .tlname{color:#5f5f5f}
+.tlrow.done .tlmeta{color:#3a3a3a}
+.tlbar{color:#4ea84e;letter-spacing:1px}
+.tlrow.reached .tlmeta,.tlrow.reached .tlbar{color:#00ff41}
+.tllimit{gap:7px}
+.tlcount{flex:0 0 auto;min-width:44px;font-weight:800;font-size:14px}
+.tllimit.st-open .tlcount{color:#666}
+.tllimit.st-ok .tlcount{color:#00ff41}
+.tllimit.st-edge .tlcount{color:#d9b264}
+.tllimit.st-over .tlcount{color:#ff6b6b}
+.tlbtn{flex:0 0 auto;width:40px;height:36px;border:1px solid #333;background:#111;color:#e6e6e6;font:inherit;font-size:18px;font-weight:800;padding:0}
+.tlbtn:active{background:#262626}
+.tlzero{width:38px;font-size:11px;color:#888}
+.tlzero.on{border-color:#4ea84e;color:#00ff41}
 /* v2.4: Tagesabschluss-Meldung */
 .dayoverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.82);opacity:0;transition:opacity .22s ease}
@@ -369,12 +401,12 @@ nav button.sel .navglyph{font-weight:800}
    ══════════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════
-   HABITDOS v3.2 — Terminal Habit Tracker
+   HABITDOS v3.3 — Terminal Habit Tracker
    ═══════════════════════════════════════════════════════════════ */
 
 const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
 const SCROLLKEY="habitdos.v1_7.scroll";
-const APP_VERSION="3.2";
+const APP_VERSION="3.3";
 /* ── v3.1: Serien, die den Habit-Typ respektieren ──
    Täglich / feste Tage : zählt fällige Tage; nicht fällige Tage werden
                           übersprungen, ein heute noch offener Tag bricht nicht.
@@ -955,50 +987,86 @@ function summary(x,l="WEEK"){
 function qshort(q){return{1:["WICHTIG","DRINGEND"],2:["WICHTIG","NICHT DRINGEND"],3:["DRINGEND","NICHT WICHTIG"],4:["WEDER","NOCH"]}[q]}
 function qroman(q){return{1:"I",2:"II",3:"III",4:"IV"}[q]}
 
+/* ── v3.3: TODAY als Terminal-Liste ──
+   Zeilen statt Karten, je 46 px (knapp über der Mindestgröße für Tippflächen),
+   die ganze Zeile ist Tippfläche. Erledigte Pflicht-Habits wandern ans Ende
+   des Pflicht-Abschnitts; Limit-Habits bleiben oben, weil sie über den ganzen
+   Tag gezählt werden und nie "fertig" sind. */
+function shortFreq(h){
+  const f=freqForDate(h,today());
+  if(f.type==="daily")return "TÄGL";
+  if(f.type==="days")return f.days.map(n=>weekdays[n-1]).join("·");
+  return "";
+}
+function shortSince(h){
+  const t=limitSinceText(h);
+  if(t==="NOCH NICHT ERFASST")return "—";
+  if(t==="GERADE EBEN")return "JETZT";
+  return t.replace(/^VOR /,"");
+}
+function tlSection(title){return `<div class="tlsec">── ${title}</div>`}
 function sofortSection(){
-  let items=todos.filter(t=>t.q===1&&!t.done);
-  if(!items.length)return"";
-  return`<div class="quad sofort"><div class="qh"><b>SOFORT · WICHTIG &amp; DRINGEND</b><small>${items.length}</small></div>${items.map(t=>`<div class="todo-item"><button class="tbox" data-act="toggleTodo" data-id="${esc(t.id)}">[ ]</button><span class="ttext">${esc(t.text)}</span></div>`).join("")}</div>`;
+  const items=todos.filter(t=>t.q===1&&!t.done);
+  if(!items.length)return "";
+  return tlSection(`SOFORT · ${items.length}`)+items.map(t=>
+    `<button class="tlrow" data-act="toggleTodo" data-id="${esc(t.id)}"><span class="tlck">[ ]</span><span class="tlname">${esc(t.text)}</span></button>`
+  ).join("");
 }
-
+function limitRow(h){
+  const c=limitCount(h,today()), mx=limitMax(h), over=c>mx;
+  const evaluated=limitEvaluated(h,today()), conf=limitConfirmed(h,today());
+  const st=!evaluated?"open":(over?"over":(c===mx?"edge":"ok"));
+  const count=evaluated?`${c}/${mx}`:`–/${mx}`;
+  const zero=(c===0)
+    ? `<button class="tlbtn tlzero${conf?" on":""}" data-act="limitZeroById" data-id="${esc(h.id)}" aria-label="${conf?"Bestätigung zurücknehmen":"Null bestätigen"}">${conf?"0✓":"0?"}</button>`
+    : "";
+  return `<div class="tlrow tllimit st-${st} noswipe">`+
+    `<span class="tlcount">${count}</span>`+
+    `<span class="tlname">${esc(h.name)}</span>`+
+    `<span class="tlmeta" data-since-habit="${esc(h.id)}" data-since-short="1">${shortSince(h)}</span>`+
+    zero+
+    `<button class="tlbtn" data-act="limitDecById" data-id="${esc(h.id)}" aria-label="Eins weniger">−</button>`+
+    `<button class="tlbtn" data-act="limitIncById" data-id="${esc(h.id)}" aria-label="Eins mehr">+</button>`+
+  `</div>`;
+}
+function habitRow(h){
+  const d=done(h,today());
+  return `<button class="tlrow${d?" done":""}" data-act="toggleById" data-id="${esc(h.id)}">`+
+    `<span class="tlck" data-habit-chk="${esc(h.id)}">${mark(h,today())}</span>`+
+    `<span class="tlname">${esc(h.name)}</span>`+
+    `<span class="tlmeta">${shortFreq(h)}</span></button>`;
+}
+function flexRow(h){
+  const p=weekProgVersioned(h,today()), dT=done(h,today()), reached=p.done>=p.target;
+  return `<button class="tlrow${reached?" reached":""}" data-act="toggleById" data-id="${esc(h.id)}">`+
+    `<span class="tlck" data-habit-chk="${esc(h.id)}">${dT?'<span class="chk donegreen">[X]</span>':'<span class="chk">[ ]</span>'}</span>`+
+    `<span class="tlname">${esc(h.name)}</span>`+
+    `<span class="tlmeta"><span class="tlbar">${bar(p.done,p.target,5)}</span> ${p.done}/${p.target}</span></button>`;
+}
 function todayView(){
-  const x=todayProgress(),streak=globalStreak();
-  const streakLine = streak>=2 ? `<div class="sysline">STREAK=<span class="sysvar">${streak}</span> DAYS</div>` : "";
+  const x=todayProgress(), streak=globalStreak();
   const obl=todayObligations(), flex=todayFlexibles();
-  // Hero now measures only today's obligations
-  const heroSub = obl.length ? `${x.done} / ${x.target} heute erledigt` : `heute nichts Pflicht`;
-  // Obligation cards (limit habits get a +/- counter instead of a toggle)
-  const oblCards = obl.length ? obl.map(h=>{
-    if(isLimit(h)){
-      const c=limitCount(h,today()), mx=limitMax(h), over=c>mx;
-      const evaluated=limitEvaluated(h,today());
-      const conf=limitConfirmed(h,today());
-      const stateCls = !evaluated ? ' limitopen' : (over ? ' limitover' : (c===mx ? ' limitedge' : ''));
-      const badge = !evaluated ? `<span class="chk limitopen-b">–/${mx}</span>`
-                   : `<span class="chk ${over?'limitred':'donegreen'}">${c}/${mx}</span>`;
-      const statusTxt = !evaluated ? 'NICHT ERFASST'
-                      : (conf&&c===0 ? 'BESTÄTIGT: 0 HEUTE'
-                      : (over ? `${c-mx}× ÜBER LIMIT` : `${mx-c}× übrig`));
-      const zeroBtn = (c===0)
-        ? `<button class="wide zerobtn${conf?' zeroon':''}" data-act="limitZeroById" data-id="${esc(h.id)}">${conf?'✓ 0 BESTÄTIGT — TIPPEN ZUM WIDERRUFEN':'0 BESTÄTIGEN'}</button>`
-        : "";
-      return `<div class="card habit limit${stateCls} noswipe"><div class="row"><b>${esc(h.name)}</b>${badge}</div><div class="counter limitctr noswipe"><button data-act="limitDecById" data-id="${esc(h.id)}">−</button><b>${c} heute</b><button data-act="limitIncById" data-id="${esc(h.id)}">+</button></div>${zeroBtn}<div class="meta"><span class="since" data-since-habit="${esc(h.id)}">LETZTE: ${limitSinceText(h)}</span><span>${statusTxt}</span></div></div>`;
-    }
-    return `<button class="card habit" data-act="toggleById" data-id="${esc(h.id)}"><div class="row"><b>${esc(h.name)}</b><span data-habit-chk="${esc(h.id)}">${mark(h,today())}</span></div><div class="meta"><span>${ftxt(h)}</span></div></button>`;
-  }).join("") : `<div class="hint">Heute stehen keine festen Habits an.</div>`;
-  // Flexible block (optional, does not count toward TODAY %)
-  let flexBlock = "";
-  if(flex.length){
-    flexBlock = `<div class="section-title">FLEXIBEL · DIESE WOCHE</div>${flex.map(h=>{
-      const p=weekProgVersioned(h,today());
-      const doneToday=done(h,today());
-      const reached=p.done>=p.target;
-      return `<button class="card habit flex${reached?' flexdone':''}" data-act="toggleById" data-id="${esc(h.id)}"><div class="row"><b>${esc(h.name)}</b><span data-habit-chk="${esc(h.id)}">${doneToday?'<span class="chk donegreen">[X]</span>':'<span class="chk">[ ]</span>'}</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,8)}</span><span>${p.done}/${p.target} THIS WEEK${reached?' · ZIEL ERREICHT':''}</span></div></button>`;
-    }).join("")}`;
+  // Reihenfolge: offene zuerst, erledigte ans Ende — jeweils in der gewohnten Reihenfolge.
+  const isDoneObl=h=>!isLimit(h)&&done(h,today());
+  const oblSorted=[...obl.filter(h=>!isDoneObl(h)),...obl.filter(isDoneObl)];
+  const dateShort=new Intl.DateTimeFormat("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"}).format(today()).toUpperCase().replace(/\.,?/,"").replace(",","");
+  const statR=obl.length?`${x.done}/${x.target}${streak>=2?` · SERIE ${streak}`:""}`:"KEINE PFLICHT";
+  const head=`<div class="tlsticky">`+
+    `<div class="tlhead"><span class="tltitle">&gt; TODAY<span class="cursor"></span></span><span class="tldate">${dateShort}</span></div>`+
+    `<div class="tlstat"><span><b class="hero-pct" data-pct="${x.p}" data-suffix="%">${x.p}%</b> `+
+    `<span class="hero-bar" data-fill="${barFill(x.done,x.target,10)}" data-w="10">${bar(x.done,x.target,10)}</span></span>`+
+    `<span class="tlstatr">${statR}</span></div></div>`;
+  let body="";
+  if(!active().length){
+    body=`<div class="hint">Noch keine Habits.</div><button class="wide" onclick="setTab('habits')">ZU HABITS</button>`;
+  }else{
+    body+=sofortSection();
+    body+=tlSection("PFLICHT");
+    body+=oblSorted.length?oblSorted.map(h=>isLimit(h)?limitRow(h):habitRow(h)).join(""):`<div class="hint">Heute keine Pflicht-Habits.</div>`;
+    if(flex.length)body+=tlSection("FLEXIBEL · WOCHE")+flex.map(flexRow).join("");
   }
-  return`<main>${header("TODAY",new Intl.DateTimeFormat("de-DE",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(today()))}${streakLine}<div class="hero"><div class="hero-top"><small>TODAY</small><span class="hero-pct" data-pct="${x.p}" data-suffix="%">${x.p}%</span></div><div class="hero-bar" data-fill="${barFill(x.done,x.target,20)}" data-w="20">${bar(x.done,x.target,20)}</div><div class="hero-sub">${heroSub}</div></div>${milestoneBanner(streak)}${sofortSection()}${oblCards}${flexBlock}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button></main>`;
+  return `<main class="tl">${head}${milestoneBanner(streak)}${body}</main>`;
 }
-
 function weekView(){
   const wStart=viewedWeek, ds=week(wStart);
   const st=weekStatus(wStart);
@@ -1802,7 +1870,7 @@ function refreshSinceLabels(){
   if(!active().some(h=>isLimit(h)))return;
   document.querySelectorAll("[data-since-habit]").forEach(el=>{
     const h=habits.find(x=>x.id===el.getAttribute("data-since-habit"));
-    if(h)el.textContent="LETZTE: "+limitSinceText(h);
+    if(h)el.textContent=el.getAttribute("data-since-short")?shortSince(h):"LETZTE: "+limitSinceText(h);
   });
 }
 function startSinceTimer(){
