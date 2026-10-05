@@ -6,374 +6,382 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
-<title>HabitDOS HTML v3.3</title>
+<meta name="theme-color" content="#0a0a0a">
+<title>HabitDOS HTML v3.4</title>
 <style>
+/* ══════════════════════════════════════════════════════════════════
+   HABITDOS v3.4 — STILE
+   Aufbau: 1 Tokens · 2 Basis · 3 Seitenkopf & Zusammenfassung
+           4 Bausteine · 5 TODAY · 6 WEEK/MONTH/HISTORY/STATS
+           7 Editor · 8 TODO-Matrix · 9 Navigation · 10 Overlays
+           11 Hover · 12 Bewegung reduzieren
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Tokens ── */
+:root{
+  /* Flächen */
+  --bg:#0a0a0a;--surface:#131313;--surface-2:#1b1b1b;
+  --line:#262626;--line-2:#3a3a3a;
+  /* Text — fg-3 ist die hellste Stufe, die auf allen Flächen ≥ 4,5:1 erreicht.
+     fg-off nur für Dekoration (leere Balkenfelder), nie für Information. */
+  --fg:#e6e6e6;--fg-2:#b0b0b0;--fg-3:#8c8c8c;--fg-off:#4a4a4a;
+  /* Akzent: ein Grün, eine gedämpfte Stufe */
+  --acc:#00ff41;--acc-2:#4ea84e;--acc-glow:rgba(0,255,65,.35);
+  /* Status */
+  --warn:#d9b264;--bad:#ff6b6b;--bad-line:#6b3030;--info:#8ab4d8;
+  /* Abstände */
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
+  /* Schrift */
+  --t-xs:11px;--t-sm:13px;--t-md:15px;--t-lg:20px;--t-xl:24px;
+  /* Maße */
+  --tap:44px;--pad:16px;
+  --nav-h:calc(54px + max(8px, env(safe-area-inset-bottom)));
+  --font:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+
+/* ── 2. Basis ── */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-html,body{background:#0a0a0a;color:#e6e6e6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;line-height:1.5;-webkit-font-smoothing:antialiased}
-body{min-height:100vh;padding-bottom:90px}
-main{max-width:640px;margin:auto;padding:22px 18px}
-
-/* ── Brand & Prompt ── */
-.brand{font-size:11px;font-weight:800;letter-spacing:.25em;color:#555;margin-bottom:4px}
-h1{font-size:22px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-h1 .prompt{color:#00ff41;font-weight:800}
-.cursor{display:inline-block;width:10px;height:22px;background:#00ff41;animation:blink 1.1s steps(1) infinite;vertical-align:-3px;margin-left:2px}
+/* v3.4: touch-action:manipulation schaltet das Doppeltipp-Zoomen ab
+   (schnelles +/+ zoomte bisher hinein). Zwei-Finger-Zoom bleibt erhalten. */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding-bottom:calc(var(--nav-h) + var(--s5))}
+button,input,label,summary,a,[data-act]{touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-user-select:none;user-select:none}
+main{max-width:640px;margin:0 auto;padding:0 var(--pad) var(--s5)}
+:focus:not(:focus-visible){outline:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.hint{font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.02em;line-height:1.6;margin-top:var(--s4)}
+.green,.donegreen{color:var(--acc)!important;text-shadow:0 0 10px var(--acc-glow)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--line-2)}
+.cursor{display:inline-block;width:.6em;height:1.1em;background:var(--acc);animation:blink 1.1s steps(1) infinite;vertical-align:-.2em;margin-left:2px}
 @keyframes blink{50%{opacity:0}}
-.sub{font-size:12px;color:#777;letter-spacing:.06em;margin-bottom:6px}
-small,.hint{font-size:11px;color:#666;letter-spacing:.02em}
-hr{border:0;border-top:1px solid #2a2a2a;margin:18px 0 22px}
 
-/* ── Hero / Summary ── */
-.hero{background:#111;border:1px solid #2a2a2a;border-left:4px solid #00ff41;padding:24px 20px;margin:0 0 20px}
-.hero-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
-.hero-top small{letter-spacing:.2em;font-size:10px;color:#555;font-weight:800}
-.hero-pct{font-size:64px;font-weight:800;line-height:.85;letter-spacing:-.03em;color:#fff}
-.hero-bar{font-size:18px;letter-spacing:2px;line-height:1;margin-bottom:14px;word-break:break-all;color:#00ff41}
-.hero-sub{letter-spacing:.04em;font-size:13px;color:#888}
+/* ── 3. Seitenkopf (alle Seiten gleich) & Zusammenfassung ── */
+.phead{position:sticky;top:0;z-index:20;background:var(--bg);
+  margin:0 calc(var(--pad) * -1) var(--s4);
+  padding:max(var(--s3), env(safe-area-inset-top)) var(--pad) var(--s3);
+  border-bottom:1px solid var(--line)}
+.phead-row{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);min-height:32px}
+.phead-title{font-size:var(--t-md);font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  display:flex;align-items:center;min-width:0;white-space:nowrap;overflow:hidden}
+.phead-title .p{color:var(--acc);margin-right:.6em}
+.phead-title .t{overflow:hidden;text-overflow:ellipsis}
+.phead-ctx{font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.06em;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;min-width:0}
+.phead-btn{flex:0 0 auto;min-height:var(--tap);padding:0 var(--s3);background:none;border:1px solid var(--line-2);
+  color:var(--fg-2);font-size:var(--t-xs);font-weight:800;letter-spacing:.06em}
+.phead-btn:active{background:var(--surface-2)}
 
-/* ── Milestone ── */
-.milestone{background:#111;border:1px dashed #00ff41;padding:14px 16px;margin:0 0 20px;text-align:center;font-size:12px;font-weight:800;letter-spacing:.14em;color:#00ff41;animation:pulse 1.8s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+/* Eine Zusammenfassung für TODAY, WEEK, MONTH und die Archive */
+.sum{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);padding-top:var(--s2)}
+.sum.box{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--acc-2);
+  padding:var(--s3) var(--s4);margin:0 0 var(--s4)}
+.sum.box.done{border-color:var(--acc-2);border-left-color:var(--acc)}
+.sum-l{display:flex;align-items:baseline;gap:var(--s3);min-width:0}
+.hero-pct{font-size:var(--t-xl);font-weight:800;line-height:1;letter-spacing:-.02em;color:var(--fg);min-width:3.4ch}
+.hero-bar{font-size:var(--t-sm);letter-spacing:1px;line-height:1;color:var(--acc);white-space:nowrap}
+.sum-r{font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.06em;text-align:right}
+.sum.done .hero-pct{color:var(--acc);text-shadow:0 0 8px var(--acc-glow)}
+.sum.done .sum-r{color:var(--acc)}
 
-/* ── Cards ── */
-.card{width:100%;display:block;text-align:left;background:#111;color:#e6e6e6;border:1px solid #2a2a2a;padding:18px;margin:0 0 12px;transition:none;position:relative}
-.card:active{background:#1a1a1a;border-color:#444}
-.card:disabled{opacity:.4;border-color:#222}
-.card:disabled .chk{color:#444!important}
-.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.row b{font-size:16px;font-weight:800;letter-spacing:.02em}
-.chk{font-size:20px;font-weight:800;letter-spacing:1px;padding:2px 0}
-.chk.na{color:#444;font-weight:400}
-.chk.donegreen{color:#00ff41!important;text-shadow:0 0 12px rgba(0,255,65,.4)}
-.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:14px;font-size:11px;color:#666}
-.mbar{letter-spacing:2px;color:#00ff41;font-size:14px;font-weight:800}
+/* Abschnittsüberschrift (TODAY-Liste und alle übrigen Seiten) */
+.section-title,.tlsec{font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.14em;font-weight:800;
+  margin:var(--s5) 0 var(--s2);display:flex;align-items:center;gap:var(--s2)}
+.section-title::before,.tlsec::before{content:"──"}
+.section-title::after,.tlsec::after{content:"";flex:1;border-top:1px solid var(--line)}
+.tlsec{margin:var(--s4) 0 0;padding:0 var(--s1)}
 
-/* ── Buttons ── */
-.wide{width:100%;min-height:56px;background:#0a0a0a;color:#e6e6e6;border:1px solid #333;padding:14px;margin-top:10px;font-weight:800;letter-spacing:.08em;font-size:11px;text-transform:uppercase;transition:none;position:relative}
-.wide:active{background:#1a1a1a;border-color:#555}
-.wide.secondary{margin-top:10px;font-weight:400;letter-spacing:.04em;border-color:#222;color:#888}
-.wide.secondary:active{border-color:#444}
-.file{display:block;text-align:center}.file input{display:none}
+/* ── 4. Bausteine ── */
+.card,.detail-card{display:block;width:100%;text-align:left;background:var(--surface);color:var(--fg);
+  border:1px solid var(--line);padding:var(--s4);margin:0 0 var(--s2)}
+button.card:active{background:var(--surface-2);border-color:var(--line-2)}
+.card.archived{border-style:dashed}
+.card.archived .row b{color:var(--fg-2)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
+.row b{font-size:var(--t-md);font-weight:800;letter-spacing:.02em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row>span{flex:0 0 auto;font-weight:800}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s1) var(--s3);margin-top:var(--s2);
+  font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.04em}
+.mbar,.mini-bar{letter-spacing:1px;color:var(--acc);font-size:var(--t-sm);font-weight:800;white-space:nowrap;overflow:hidden}
+.mini-bar{margin-top:var(--s2)}
 
-/* ── Navigation ── */
-nav{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#0a0a0a;border-top:2px solid #1a1a1a;display:flex;padding:8px max(6px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom))}
-nav button{flex:1;background:none;border:0;color:#555;padding:13px 1px;font:inherit;font-size:13.5px;letter-spacing:.02em;font-weight:800;text-transform:uppercase;transition:none;position:relative;white-space:nowrap;overflow:hidden}
-nav button.sel{color:#00ff41;font-weight:800;background:#111;border-top:2px solid #00ff41;margin-top:-2px}
-nav button.sel::before{content:"> "}
-/* v3.0: die Seite hinter dem offenen Menü — erkennbar, aber nicht als "angetippt" */
-nav button.cur{color:#2e7d3f;background:#0d0d0d;border-top:2px solid #1f5c2c;margin-top:-2px}
-nav button.cur::before{content:"> "}
-nav button:active{color:#888;background:#151515}
+.chk{font-weight:800;letter-spacing:1px}
+.chk.na{color:var(--fg-3);font-weight:400}
+.chk.limitred{color:var(--bad)}
 
-.nav-more{flex:1;position:relative}
-.nav-more>button{width:100%}
-.nav-pop{position:absolute;bottom:58px;right:4px;background:#0a0a0a;border:1px solid #333;min-width:140px;padding:4px;box-shadow:0 4px 20px rgba(0,0,0,.8)}
-.nav-pop button{display:block;width:100%;text-align:left;background:#111;color:#888;border:0;padding:13px;font:inherit;font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
-.nav-pop button.sel{color:#00ff41;background:#1a1a1a}
-.nav-pop button:active{background:#222}
+.wide{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;
+  background:var(--surface);color:var(--fg);border:1px solid var(--line-2);padding:var(--s3);margin-top:var(--s2);
+  font-size:var(--t-xs);font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center}
+.wide:active{background:var(--surface-2)}
+.wide.primary{border-color:var(--acc-2);color:var(--acc)}
+.wide.secondary{background:transparent;border-color:var(--line);color:var(--fg-2);font-weight:400;letter-spacing:.04em}
+.wide.danger{background:transparent;border-color:var(--bad-line);color:var(--bad)}
+.file{position:relative;cursor:pointer}
+.file input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.file:focus-within{outline:2px solid var(--acc);outline-offset:2px}
 
-/* ── Table / Week ── */
-.table{overflow:auto}.wh,.wr{display:grid;grid-template-columns:120px repeat(7,42px);align-items:center;min-width:420px}
-.wh{font-size:10px;color:#555;margin-bottom:10px;letter-spacing:.08em;font-weight:800}.wh span{text-align:center}
-.wr{border-bottom:1px solid #1a1a1a;padding:14px 0}.wr>span{text-align:center;font-size:16px}
-.wr div{display:flex;flex-direction:column;gap:4px}.wr b{font-size:13px;font-weight:800}
-.wr small{color:#555;font-size:10px}
+.status-tag{display:inline-block;font-size:var(--t-xs);font-weight:400;letter-spacing:.1em;padding:0 6px;
+  border:1px solid var(--line-2);color:var(--fg-3);margin-left:var(--s2);vertical-align:1px}
+.status-tag.current{border-color:var(--acc-2);color:var(--acc)}
+.readonly{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:var(--s2) 0;margin:0 0 var(--s4);
+  font-size:var(--t-xs);letter-spacing:.1em;color:var(--fg-3);font-weight:800}
 
-/* ── Month Nav ── */
-.monthnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-.monthnav button{font-size:28px;color:#fff;background:none;border:0;padding:8px 20px;font-weight:800}
-.monthnav button:active{color:#00ff41}
-.monthnav b{font-size:15px;letter-spacing:.06em;font-weight:800}
-.monthnav .back{font-size:11px;padding:10px 12px;color:#888;border:1px solid #222}
+/* Periodennavigation ‹ KW 41 › — überall gleich */
+.periodnav{display:grid;grid-template-columns:var(--tap) 1fr var(--tap);align-items:center;gap:var(--s2);margin:0 0 var(--s4)}
+.periodnav>button{height:var(--tap);background:var(--surface);border:1px solid var(--line-2);
+  color:var(--fg);font-size:var(--t-lg);font-weight:800;line-height:1;padding:0}
+.periodnav>button:active{background:var(--surface-2)}
+.pmid{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;
+  font-size:var(--t-sm);font-weight:800;letter-spacing:.06em;min-width:0}
+.pmid small{font-size:var(--t-xs);font-weight:400;color:var(--fg-3);letter-spacing:.02em}
+.pjump{margin-top:var(--s1);min-height:32px;padding:0 var(--s3);background:none;border:1px solid var(--acc-2);
+  color:var(--acc);font-size:var(--t-xs);font-weight:800;letter-spacing:.06em}
+.pjump:active{background:var(--surface-2)}
 
-/* ── Modal / Dialog ── */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:30;display:flex;align-items:flex-end}
-.dialog{width:100%;max-width:620px;margin:auto;background:#0a0a0a;border:1px solid #333;border-top:3px solid #00ff41;padding:24px 20px;max-height:92vh;overflow:auto}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.top b{font-size:14px;letter-spacing:.1em;font-weight:800}
-.top button{color:#888;font-size:11px;letter-spacing:.06em;background:none;border:1px solid #333;padding:10px 14px;font-weight:800}
-.top button:active{border-color:#555}
-.dialog label{display:block;font-size:11px;color:#555;margin:18px 0;letter-spacing:.06em;font-weight:800}
-.dialog input{display:block;width:100%;margin-top:10px;background:#111;border:1px solid #333;color:#fff;padding:16px;font:inherit;font-size:16px}
-.dialog input:focus{outline:none;border-color:#00ff41}
-.label{font-size:11px;color:#555;margin:20px 0 10px;letter-spacing:.06em;font-weight:800}
+.empty{border:1px dashed var(--line-2);padding:var(--s5) var(--s4);text-align:center;color:var(--fg-2);
+  font-size:var(--t-sm);margin:var(--s2) 0 var(--s4)}
+.empty .wide{margin-top:var(--s4)}
 
-/* ── Segmented Controls ── */
-.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.seg button,.days button{background:#111;color:#888;border:1px solid #222;padding:14px 6px;font:inherit;font-size:10px;letter-spacing:.04em;min-height:48px;font-weight:800;text-transform:uppercase}
-.seg button.sel,.days button.sel{color:#00ff41;border-color:#00ff41;background:#111}
-.seg button:active,.days button:active{background:#1a1a1a}
+.milestone{border:1px dashed var(--acc-2);background:var(--surface);color:var(--acc);text-align:center;
+  font-size:var(--t-xs);font-weight:800;letter-spacing:.14em;padding:var(--s3);margin:var(--s3) 0 0}
 
-.counter{display:flex;justify-content:space-between;align-items:center;border:1px solid #222;padding:8px}
-.counter button{background:none;border:0;color:#fff;font-size:28px;padding:8px 24px;font-weight:800}
-.counter b{font-size:16px;font-weight:800}
+/* Farbstufen für Heatmap & Habit-Verlauf (vorher Inline-Styles) */
+.lv0{color:var(--fg-off)}.lv1{color:var(--fg-3)}.lv2{color:var(--fg-2)}.lv3{color:var(--acc-2)}.lv4{color:var(--acc)}
 
-.days{border:1px solid #222}
-.days button{width:100%;text-align:left;border:0;border-bottom:1px solid #1a1a1a;padding:16px 14px;font-size:11px;font-weight:800;color:#888}
-.days button:last-child{border:0}
-.days button.sel{color:#00ff41}
-
-.danger{margin-top:14px;color:#ff5555;border-color:#442222}
-
-/* ── Matrix / TODO ── */
-.matrix{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-.quad{background:#111;border:1px solid #222;padding:14px}
-.qh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;border-bottom:1px solid #1a1a1a;padding-bottom:10px;gap:8px}
-.qh b{font-size:10px;letter-spacing:.04em;line-height:1.3;font-weight:800;color:#888}
-.qh small{letter-spacing:0;font-size:10px;white-space:nowrap;color:#555}
-.todo-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #1a1a1a}
-.todo-item:last-child{border:0}
-.todo-item.done .ttext{color:#444;text-decoration:line-through}
-.tbox{background:none;border:0;padding:6px 6px 6px 0;margin:-6px 0 -6px -2px;color:#fff;line-height:1;font-size:14px;font-weight:800;cursor:pointer}
-.ttext{flex:1;font-size:12px;line-height:1.5;word-break:break-word;padding-top:4px;color:#ccc}
-.tdel{background:none;border:0;color:#444;font-size:20px;padding:4px 6px;margin:-4px -6px -4px 0;line-height:1;cursor:pointer}
-.tdel:active{color:#ff5555}
-.qempty{font-size:11px;color:#333}
-
-.seg2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.seg2 button{background:#111;color:#888;border:1px solid #222;padding:14px 10px;font:inherit;font-size:10px;text-align:left;line-height:1.4;letter-spacing:.02em;min-height:48px;font-weight:800}
-.seg2 button.sel{color:#00ff41;border-color:#00ff41;background:#111}
-
-/* ── v1.5+ History / Stats ── */
-.donegreen{color:#00ff41!important;text-shadow:0 0 12px rgba(0,255,65,.35)}
-.card.archived{border-color:#222;opacity:.9}
-.archive-label{font-size:10px;color:#444;letter-spacing:.14em;font-weight:800}
-.history-group{margin:0 0 24px}
-.history-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#111;border:1px solid #222;padding:16px 14px;margin:0 0 10px;text-align:left;width:100%;color:#e6e6e6;font:inherit;cursor:pointer}
-.history-row:active{background:#1a1a1a;border-color:#333}
-.history-row b{font-size:13px;font-weight:800}
-.history-row small{display:block;margin-top:4px;color:#555}
-.history-pct{font-size:18px;font-weight:800;white-space:nowrap;color:#fff}
-.section-title{font-size:10px;color:#555;letter-spacing:.18em;margin:24px 0 10px;font-weight:800}
-.year-row{display:grid;grid-template-columns:40px 48px 1fr;gap:10px;align-items:center;border-bottom:1px solid #1a1a1a;padding:12px 0;font-size:11px}
-.year-row .yp{font-weight:800;text-align:right;color:#fff}
-.year-row .yb{font-size:11px;letter-spacing:0;color:#888}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.stat{background:#111;border:1px solid #222;padding:16px}
-.stat small{display:block;margin-bottom:8px;letter-spacing:.1em;color:#555;font-weight:800}
-.stat b{font-size:22px;font-weight:800;color:#fff}
-.readonly{border-top:1px solid #222;border-bottom:1px solid #222;padding:10px 0;margin:0 0 18px;font-size:10px;letter-spacing:.14em;color:#444;font-weight:800}
-
-/* ── v1.6+ refinements ── */
-.todayline{display:flex;justify-content:space-between;align-items:center;margin:-4px 0 18px;color:#555;font-size:10px;letter-spacing:.08em;font-weight:800}
-.tap-hint{color:#444;font-size:9px;letter-spacing:.06em}
-.archive-current{border-left:3px solid #00ff41}
-.detail-card{background:#111;border:1px solid #222;padding:16px;margin-bottom:12px}
-.detail-card .big{font-size:28px;font-weight:800;color:#fff}
-.mini-bar{font-size:13px;letter-spacing:1px;margin-top:10px;color:#00ff41;font-weight:800}
-.green{color:#00ff41!important;text-shadow:0 0 10px rgba(0,255,65,.3)}
-
-/* ── v1.7 Terminal additions ── */
-.sysline{font-size:11px;color:#444;letter-spacing:.08em;font-weight:800;margin-bottom:8px}
-.sysline .sysvar{color:#00ff41}
-.prompt-line{font-size:13px;color:#555;margin-bottom:16px;font-weight:800;letter-spacing:.04em}
-.prompt-line .path{color:#00ff41}
-
-/* ── Swipe transition ── */
-.view-wrap{transition:transform .12s ease-out,opacity .12s ease-out}
-.view-wrap.swipe-left{transform:translateX(-30px);opacity:.6}
-.view-wrap.swipe-right{transform:translateX(30px);opacity:.6}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#0a0a0a}
-::-webkit-scrollbar-thumb{background:#222}
-::-webkit-scrollbar-thumb:hover{background:#333}
-
-/* ── v1.8 additions ── */
-.status-tag{display:inline-block;font-size:9px;letter-spacing:.14em;padding:2px 7px;border:1px solid #4a4a4a;color:#888;margin-left:8px;vertical-align:2px}
-.status-tag.current{border-color:#69ff69;color:#69ff69}
-.status-tag.future{border-color:#7a7a7a;color:#999}
-.periodnav{display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;gap:10px}
-.periodnav button{font-size:26px;color:#e6e6e6;background:none;border:1px solid #4a4a4a;padding:2px 16px;min-height:44px;transition:background .1s}
-.periodnav button:active{background:#252525}
-.periodnav .pmid{flex:1;text-align:center;font-size:13px;letter-spacing:.06em;font-weight:800}
-.periodnav .pmid small{display:block;font-weight:400;margin-top:3px;letter-spacing:.02em}
-.completebar{border:1px solid #4a4a4a;padding:14px;margin:0 0 16px;text-align:center}
-.completebar .cbig{font-size:34px;font-weight:800;line-height:1;letter-spacing:-.01em}
-.completebar .cstat{font-size:11px;letter-spacing:.16em;margin-top:8px}
-.completebar.done{border-color:#69ff69}
-.completebar.done .cbig,.completebar.done .cstat{color:#69ff69;text-shadow:0 0 8px rgba(105,255,105,.3)}
-.weekrows{margin:0 0 8px}
-.weekrow{display:grid;grid-template-columns:42px 1fr 42px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #2a2a2a;font-size:12px}
-.weekrow:last-child{border:0}
-.weekrow .wlabel{color:#999;letter-spacing:.04em}
-.weekrow .wbar{letter-spacing:1px;color:#69ff69;font-size:13px;white-space:nowrap;overflow:hidden}
-.weekrow .wpct{text-align:right;font-weight:800}
-.weekrow.cur .wlabel{color:#69ff69}
-.cmp-row{display:grid;grid-template-columns:1fr 60px 60px;gap:8px;align-items:baseline;padding:8px 0;border-bottom:1px solid #2a2a2a;font-size:13px}
-.cmp-row .cmp-m{letter-spacing:.06em}
-.cmp-row .cmp-p{text-align:right;font-weight:800}
-.cmp-row .cmp-d{text-align:right;font-size:11px;color:#888}
-.cmp-row .cmp-d.up{color:#69ff69}
-.cmp-row .cmp-d.down{color:#c88}
-.superlate{display:grid;grid-template-columns:70px 1fr;gap:8px;padding:6px 0;font-size:11px;letter-spacing:.04em;color:#999}
-.superlate b{color:#e6e6e6}
-.heatmap{margin:6px 0 10px}
-.heat-row{display:grid;grid-template-columns:40px 1fr 38px;gap:9px;align-items:center;padding:6px 0;font-size:12px}
-.heat-row .hm{color:#999;letter-spacing:.04em}
-.heat-row .hbar{letter-spacing:1px;font-size:13px;white-space:nowrap;overflow:hidden}
-.heat-row .hp{text-align:right;font-weight:800;font-size:11px}
-.habit-pick{display:block;width:100%;text-align:left;background:#202020;border:1px solid #4a4a4a;color:#e6e6e6;padding:13px;margin:0 0 8px;font:inherit;font-size:13px;transition:background .1s}
-.habit-pick:active{background:#292929}
-.habit-hist-row{display:grid;grid-template-columns:52px 1fr 44px;gap:9px;align-items:center;padding:7px 0;border-bottom:1px solid #2a2a2a;font-size:12px}
-.habit-hist-row .hh-m{color:#999}
-.habit-hist-row .hh-bar{letter-spacing:1px;color:#69ff69;font-size:12px;white-space:nowrap;overflow:hidden}
-.habit-hist-row .hh-p{text-align:right;font-weight:800}
-/* v1.9: flexible habit cards on TODAY read as optional */
-.card.flex{border-style:dashed;border-color:#4a4a4a}
-.card.flex .mbar{color:#888}
-.card.flex.flexdone{border-color:#4ea84e}
-.card.flex.flexdone .mbar{color:#69ff69}
-/* v2.0: limit habit cards (fewer = better) */
-.seg.seg4{grid-template-columns:repeat(4,1fr)}
-.card.limit{border-color:#4ea84e}
-.card.limit.limitedge{border-color:#c9a94e}
-.card.limit.limitover{border-color:#c85a5a}
-.chk.limitred{color:#ff6b6b}
-.counter.limitctr{margin-top:12px}
-.counter.limitctr button{font-size:28px;min-width:64px}
-.counter.limitctr b{font-size:15px}
-.card.limit:active{background:#2d2d2d}
-.meta .since{letter-spacing:.06em;color:#9a9a9a}
-.card.limit.limitover .meta .since{color:#c88}
-/* v2.2: limit states + zero-confirm */
-.card.limit.limitopen{border-color:#4a4a4a;border-style:dashed}
-.chk.limitopen-b{color:#777}
-.zerobtn{margin-top:10px;min-height:44px;font-size:10px;border-color:#4a4a4a;color:#bbb}
-.zerobtn.zeroon{border-color:#4ea84e;color:#69ff69}
-.zerobtn:active{background:#232323}
-/* v2.2: quick capture + inbox + bucket picker */
-.quickrow{display:flex;gap:8px;margin:0 0 14px}
-.quickrow input{flex:1;background:#1c1c1c;border:1px solid #5a5a5a;color:#fff;padding:14px;font:inherit;font-size:16px}
-.quickrow button{width:58px;background:#1c1c1c;border:1px solid #5a5a5a;color:#e6e6e6;font:inherit;font-size:22px;font-weight:800}
-.quickrow button:active{background:#292929}
-.quad.inbox{margin:0 0 14px;border-color:#6a6a6a}
-.quad.inbox .qh b{font-size:11px;letter-spacing:.1em}
-.tmove{background:none;border:0;color:#888;font-size:17px;padding:4px 6px;margin:-4px -4px -4px 0;line-height:1}
-.ttext{cursor:pointer}
-.tpick{display:flex;flex-wrap:wrap;gap:5px;padding:7px 0 10px}
-.tpick button{background:#1c1c1c;border:1px solid #5a5a5a;color:#ddd;font:inherit;font-size:9px;padding:9px 8px;min-height:38px;letter-spacing:.04em}
-.tpick button.sel{border-color:#69ff69;color:#69ff69;font-weight:800}
-.tpick .tpdel{border-color:#6b3f3f;color:#e6a5a5;margin-left:auto}
-/* ── v2.6: Eisenhower-Matrix — vier Quadranten auf einem Bildschirm ──
-   Wichtigkeit wird über Dunkelheit codiert: I am dunkelsten, IV am hellsten.
-   Dazu ein gedämpfter Farbakzent je Quadrant für die schnelle Orientierung. */
-.todoscreen{height:calc(100dvh - 92px);max-width:640px;margin:auto;
-  padding:14px 14px 0;display:flex;flex-direction:column;gap:9px}
-@supports not (height: 100dvh){ .todoscreen{height:calc(100vh - 92px)} }
-.tdhead{flex:0 0 auto}
-.tdhead .brand{font-size:10px;letter-spacing:.2em;color:#777}
-.tdstat{display:flex;justify-content:space-between;align-items:baseline;
-  margin-top:5px;padding-bottom:7px;border-bottom:1px solid #4a4a4a}
-.tdtitle{font-size:14px;font-weight:800;letter-spacing:.14em;display:flex;align-items:center;gap:6px}
-.tdnums{font-size:10px;letter-spacing:.08em;color:#8a8a8a}
-.todoscreen .quickrow{flex:0 0 auto;margin:0}
-.todoscreen .quickrow input{padding:11px 12px;font-size:16px}
-.todoscreen .quickrow button{width:50px;font-size:20px}
-/* Eingang: kompakt, wächst nur bis zu einer festen Höhe */
-.quad.inbox{flex:0 0 auto;max-height:118px;display:flex;flex-direction:column;
-  margin:0;border-color:#6e6e6e;background:#1a1a1a}
-.quad.inbox .qbody{flex:1;min-height:0;overflow-y:auto;max-height:none}
-.quad.inbox .qnum{color:#69ff69}
-/* Die Matrix nimmt den gesamten verbleibenden Platz ein */
-.matrix{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;
-  grid-template-rows:1fr 1fr;gap:7px;margin:0 0 9px}
-.quad{display:flex;flex-direction:column;min-height:0;overflow:hidden;
-  border:1px solid #4a4a4a;padding:0;background:#212121}
-.qh2{flex:0 0 auto;display:grid;grid-template-columns:14px 1fr auto;gap:6px;align-items:center;
-  padding:7px 8px 6px;border-bottom:1px solid rgba(255,255,255,.07)}
-.qnum{font-size:10px;font-weight:800;text-align:center;line-height:1}
-.qlab{display:flex;flex-direction:column;line-height:1.2;min-width:0}
-.qlab b{font-size:8.5px;font-weight:800;letter-spacing:.07em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qlab i{font-size:8px;font-style:normal;letter-spacing:.05em;color:#8a8a8a;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qcount{font-size:11px;font-weight:800;min-width:12px;text-align:right}
-.qbody{flex:1;min-height:0;overflow-y:auto;padding:3px 8px 7px}
-/* Quadrant I — wichtigste, dunkelste Fläche, roter Akzent */
-.quad.q1{background:#0d0d0d;border-color:#7a4a4a}
-.quad.q1 .qnum,.quad.q1 .qcount,.quad.q1 .qlab b{color:#e88}
-/* Quadrant II — bernstein */
-.quad.q2{background:#191919;border-color:#7a6a3f}
-.quad.q2 .qnum,.quad.q2 .qcount,.quad.q2 .qlab b{color:#d9b264}
-/* Quadrant III — blau */
-.quad.q3{background:#242424;border-color:#4f6478}
-.quad.q3 .qnum,.quad.q3 .qcount,.quad.q3 .qlab b{color:#8ab4d8}
-/* Quadrant IV — hellste Fläche, neutral */
-.quad.q4{background:#2e2e2e;border-color:#5a5a5a}
-.quad.q4 .qnum,.quad.q4 .qcount,.quad.q4 .qlab b{color:#a8a8a8}
-/* Aufgabenzeilen */
-.todo-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;
-  border-bottom:1px solid rgba(255,255,255,.06)}
-.todo-item:last-child{border:0}
-.tbox{background:none;border:0;padding:4px 4px 4px 0;margin:-4px 0 -4px -2px;color:#ddd;
-  line-height:1;font-size:11px;font-weight:800;flex:0 0 auto}
-.ttext{flex:1;min-width:0;font-size:11px;line-height:1.3;word-break:break-word;
-  color:#e6e6e6;cursor:pointer;padding:1px 0}
-.todo-item.done .ttext{color:#6d6d6d;text-decoration:line-through}
-.todo-item.done .tbox{color:#69ff69}
-.qempty{font-size:9.5px;color:#5a5a5a;padding:6px 0}
-.tpick{display:flex;flex-wrap:wrap;gap:4px;padding:4px 0 7px}
-.tpick button{background:#171717;border:1px solid #5a5a5a;color:#ddd;font:inherit;font-size:9px;
-  padding:7px 8px;min-height:34px;min-width:32px;letter-spacing:.04em}
-.tpick button.sel{border-color:#69ff69;color:#69ff69;font-weight:800}
-.tpick .tpdel{border-color:#6b3f3f;color:#e6a5a5;margin-left:auto;font-size:8.5px}
-/* v2.7: Matrix-Zeichen im Reiter — Ersatzschriften skalieren es anders,
-   deshalb Größe und Grundlinie hier explizit festlegen. */
-.navglyph{display:inline-block;font-size:19.5px;line-height:1;vertical-align:-3px;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Segoe UI Symbol",monospace}
-nav button.sel .navglyph{font-weight:800}
-/* v3.1: Warnung bei Speicherfehler */
-.storewarn{position:sticky;top:0;z-index:40;background:#3a1212;color:#ffb3b3;border-bottom:1px solid #a33;
-  padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));font-size:11px;letter-spacing:.04em}
-/* ── v3.3: TODAY als Terminal-Liste ── */
-main.tl{padding:0 12px 16px}
-.tlsticky{position:sticky;top:0;z-index:20;background:#0a0a0a;margin:0 -12px;padding:0 12px;border-bottom:1px solid #1f1f1f}
-.tlhead{display:flex;justify-content:space-between;align-items:baseline;padding:14px 4px 4px}
-.tltitle{font-size:16px;font-weight:800;letter-spacing:.08em;display:flex;align-items:center;gap:6px}
-.tldate{font-size:12px;color:#666;letter-spacing:.06em}
-.tlstat{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 10px;font-size:13px}
-.tlstat .hero-pct{font-size:20px;font-weight:800;line-height:1;letter-spacing:-.01em;color:#fff}
-.tlstat .hero-bar{font-size:13px;letter-spacing:1px;color:#00ff41;margin:0;word-break:normal}
-.tlstatr{font-size:12px;color:#666;letter-spacing:.04em}
-.tlsec{font-size:11px;color:#555;letter-spacing:.12em;padding:16px 4px 4px;display:flex;align-items:center;gap:8px;font-weight:800}
-.tlsec::after{content:"";flex:1;border-top:1px solid #222}
-.tlrow{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:0 4px;margin:0;
-  background:none;border:0;border-bottom:1px solid #181818;color:#e6e6e6;font:inherit;font-size:15px;text-align:left}
-button.tlrow:active{background:#151515}
-.tlck{flex:0 0 auto;font-weight:800;min-width:28px}
+/* ── 5. TODAY ── */
+.tlrow{display:flex;align-items:center;gap:var(--s2);width:100%;min-height:48px;padding:0 var(--s1);margin:0;
+  background:none;border:0;border-bottom:1px solid var(--line);color:var(--fg);font-size:var(--t-md);text-align:left}
+button.tlrow:active{background:var(--surface-2)}
+.tlrow:focus-visible{outline-offset:-2px}
+.tlck{flex:0 0 auto;min-width:32px;font-weight:800}
 .tlname{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tlmeta{flex:0 0 auto;font-size:11px;color:#555;letter-spacing:.04em}
-.tlrow.done .tlname{color:#5f5f5f}
-.tlrow.done .tlmeta{color:#3a3a3a}
-.tlbar{color:#4ea84e;letter-spacing:1px}
-.tlrow.reached .tlmeta,.tlrow.reached .tlbar{color:#00ff41}
-.tllimit{gap:7px}
-.tlcount{flex:0 0 auto;min-width:44px;font-weight:800;font-size:14px}
-.tllimit.st-open .tlcount{color:#666}
-.tllimit.st-ok .tlcount{color:#00ff41}
-.tllimit.st-edge .tlcount{color:#d9b264}
-.tllimit.st-over .tlcount{color:#ff6b6b}
-.tlbtn{flex:0 0 auto;width:40px;height:36px;border:1px solid #333;background:#111;color:#e6e6e6;font:inherit;font-size:18px;font-weight:800;padding:0}
-.tlbtn:active{background:#262626}
-.tlzero{width:38px;font-size:11px;color:#888}
-.tlzero.on{border-color:#4ea84e;color:#00ff41}
-/* v2.4: Tagesabschluss-Meldung */
+.tlmeta{flex:0 0 auto;font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.04em;white-space:nowrap}
+.tlrow.done .tlname,.tlrow.done .tlmeta{color:var(--fg-3)}
+.tlbar{color:var(--acc-2);letter-spacing:1px}
+.tlrow.reached .tlmeta,.tlrow.reached .tlbar{color:var(--acc)}
+.tllimit{gap:6px;min-height:56px}
+.tlcount{flex:0 0 auto;min-width:40px;font-weight:800;font-size:var(--t-sm)}
+.tllimit.st-open .tlcount{color:var(--fg-3)}
+.tllimit.st-ok .tlcount{color:var(--acc)}
+.tllimit.st-edge .tlcount{color:var(--warn)}
+.tllimit.st-over .tlcount{color:var(--bad)}
+.tlbtn{flex:0 0 auto;width:var(--tap);height:var(--tap);border:1px solid var(--line-2);background:var(--surface);
+  color:var(--fg);font-size:var(--t-lg);font-weight:800;line-height:1;padding:0}
+.tlbtn:active{background:var(--surface-2);border-color:var(--fg-3)}
+.tlzero{font-size:var(--t-xs);color:var(--fg-2)}
+.tlzero.on{border-color:var(--acc-2);color:var(--acc)}
+
+/* ── 6. WEEK / MONTH / HISTORY / STATS ── */
+.table{overflow-x:auto;margin:0 0 var(--s2)}
+.wh,.wr{display:grid;grid-template-columns:minmax(84px,1fr) repeat(7,minmax(26px,36px));align-items:center}
+.wh{font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.04em;font-weight:800;border-bottom:1px solid var(--line-2)}
+.wh span{text-align:center;line-height:1.3;padding:var(--s1) 0}
+.wh span:first-child{text-align:left}
+.wr{border-bottom:1px solid var(--line);min-height:52px}
+.wr>span{align-self:stretch;display:flex;align-items:center;justify-content:center;font-size:var(--t-sm)}
+.wr>div{display:flex;flex-direction:column;gap:2px;min-width:0;padding:var(--s2) var(--s2) var(--s2) 0}
+.wr b{font-size:var(--t-sm);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wr small{color:var(--fg-3);font-size:var(--t-xs);line-height:1.3}
+.wh .today,.wr .today{background:var(--surface)}
+.wh .today{color:var(--acc)}
+
+.weekrows{margin:0 0 var(--s2)}
+.weekrow{display:grid;grid-template-columns:48px 1fr 48px;gap:var(--s2);align-items:center;padding:var(--s2) 0;
+  border-bottom:1px solid var(--line);font-size:var(--t-sm)}
+.weekrow:last-child{border:0}
+.weekrow .wlabel{color:var(--fg-3);letter-spacing:.04em}
+.weekrow .wbar{letter-spacing:1px;color:var(--acc-2);white-space:nowrap;overflow:hidden}
+.weekrow .wpct{text-align:right;font-weight:800}
+.weekrow.cur .wlabel,.weekrow.cur .wbar{color:var(--acc)}
+
+.cmp-row{display:grid;grid-template-columns:1fr 64px 64px;gap:var(--s2);align-items:baseline;padding:var(--s2) 0;
+  border-bottom:1px solid var(--line);font-size:var(--t-sm)}
+.cmp-row .cmp-m{letter-spacing:.06em;color:var(--fg-2)}
+.cmp-row .cmp-p{text-align:right;font-weight:800}
+.cmp-row .cmp-d{text-align:right;font-size:var(--t-xs);color:var(--fg-3)}
+.cmp-row .cmp-d.up{color:var(--acc)}
+.cmp-row .cmp-d.down{color:var(--bad)}
+.superlate{display:grid;grid-template-columns:104px 1fr;gap:var(--s2);padding:var(--s2) 0;font-size:var(--t-xs);
+  letter-spacing:.04em;color:var(--fg-3);border-bottom:1px solid var(--line)}
+.superlate:last-child{border:0}
+.superlate b{color:var(--fg)}
+
+.history-row{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);width:100%;min-height:56px;
+  background:var(--surface);border:1px solid var(--line);padding:var(--s3) var(--s4);margin:0 0 var(--s2);
+  text-align:left;color:var(--fg)}
+.history-row:active{background:var(--surface-2);border-color:var(--line-2)}
+.history-row b{font-size:var(--t-sm);font-weight:800}
+.history-row small{display:block;margin-top:2px;color:var(--fg-3);font-size:var(--t-xs)}
+.history-pct{font-size:var(--t-lg);font-weight:800;white-space:nowrap}
+
+.heatmap{margin:0 0 var(--s2)}
+.heat-row,.habit-hist-row{display:grid;grid-template-columns:48px 1fr 44px;gap:var(--s2);align-items:center;
+  padding:6px 0;font-size:var(--t-sm)}
+.heat-row .hm,.habit-hist-row .hh-m{color:var(--fg-3);letter-spacing:.04em}
+.heat-row .hbar,.habit-hist-row .hh-bar{letter-spacing:1px;white-space:nowrap;overflow:hidden}
+.heat-row .hp,.habit-hist-row .hh-p{text-align:right;font-weight:800;font-size:var(--t-xs)}
+.habit-hist-row{border-bottom:1px solid var(--line)}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin-bottom:var(--s2)}
+.stat{background:var(--surface);border:1px solid var(--line);padding:var(--s3) var(--s4)}
+.stat small{display:block;margin-bottom:var(--s1);font-size:var(--t-xs);letter-spacing:.1em;color:var(--fg-3);font-weight:800}
+.stat b{font-size:var(--t-xl);font-weight:800}
+.habit-pick{display:flex;justify-content:space-between;align-items:center;gap:var(--s3);width:100%;min-height:var(--tap);
+  text-align:left;background:var(--surface);border:1px solid var(--line);color:var(--fg);padding:var(--s2) var(--s4);
+  margin:0 0 var(--s2);font-size:var(--t-sm)}
+.habit-pick:active{background:var(--surface-2)}
+.habit-pick span:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.habit-pick span:last-child{font-weight:800;color:var(--fg-2)}
+
+/* Archiv-Abschnitt in HABITS */
+.archive{margin-top:var(--s3)}
+.archive>summary{list-style:none;min-height:var(--tap);display:flex;align-items:center;gap:var(--s2);cursor:pointer;
+  font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.14em;font-weight:800}
+.archive>summary::-webkit-details-marker{display:none}
+.archive>summary::before{content:"▸"}
+.archive[open]>summary::before{content:"▾"}
+
+/* ── 7. Habit-Editor ── */
+.field{display:block;margin:0 0 var(--s1)}
+.flabel,.label{display:block;font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.1em;font-weight:800;margin:var(--s5) 0 var(--s2)}
+.field .flabel{margin-top:var(--s2)}
+.input{display:block;width:100%;min-height:52px;background:var(--surface);border:1px solid var(--line-2);border-radius:0;
+  color:var(--fg);padding:var(--s3) var(--s4);font:inherit;font-size:16px;-webkit-appearance:none;appearance:none}
+.input::placeholder{color:var(--fg-3)}
+.input:focus{border-color:var(--acc);outline:none}
+.input[aria-invalid="true"]{border-color:var(--bad)}
+.ferr{color:var(--bad);font-size:var(--t-xs);letter-spacing:.04em;min-height:1.5em;margin-top:var(--s1)}
+.seg{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s2)}
+@media (min-width:480px){.seg.seg4{grid-template-columns:repeat(4,1fr)}}
+.seg button{min-height:52px;background:var(--surface);color:var(--fg-2);border:1px solid var(--line);padding:var(--s2);
+  font-size:var(--t-xs);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.seg button::before{content:"□ "}
+.seg button.sel{color:var(--acc);border-color:var(--acc)}
+.seg button.sel::before{content:"■ "}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--s1)}
+.days button{min-height:60px;background:var(--surface);border:1px solid var(--line);color:var(--fg-2);padding:0;
+  font-size:var(--t-xs);font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.days button::before{content:"□";font-size:var(--t-sm)}
+.days button.sel{color:var(--acc);border-color:var(--acc)}
+.days button.sel::before{content:"■"}
+.counter{display:grid;grid-template-columns:56px 1fr 56px;align-items:center;border:1px solid var(--line)}
+.counter button{height:52px;background:none;border:0;color:var(--fg);font-size:var(--t-xl);font-weight:800;padding:0}
+.counter button:active{background:var(--surface-2)}
+.counter b{text-align:center;font-size:var(--t-lg);font-weight:800}
+.ezone{margin-top:var(--s6);padding-top:var(--s2);border-top:1px dashed var(--line-2)}
+
+/* ── 8. TODO-Matrix ──
+   Wichtigkeit wird über Dunkelheit codiert: I am dunkelsten, IV am hellsten,
+   dazu ein gedämpfter Farbakzent je Quadrant. */
+.todoscreen{height:calc(100dvh - var(--nav-h) - var(--s5));max-width:640px;margin:0 auto;padding:0 var(--pad);
+  display:flex;flex-direction:column;gap:var(--s2)}
+@supports not (height:100dvh){.todoscreen{height:calc(100vh - var(--nav-h) - var(--s5))}}
+.todoscreen .phead{position:static;flex:0 0 auto;margin-bottom:0}
+.quickrow{display:flex;gap:var(--s2);flex:0 0 auto}
+.quickrow input{flex:1;min-width:0;min-height:var(--tap);background:var(--surface);border:1px solid var(--line-2);border-radius:0;
+  color:var(--fg);padding:0 var(--s3);font:inherit;font-size:16px;-webkit-appearance:none;appearance:none}
+.quickrow input::placeholder{color:var(--fg-3)}
+.quickrow input:focus{border-color:var(--acc);outline:none}
+.quickrow button{flex:0 0 auto;width:52px;min-height:var(--tap);background:var(--surface);border:1px solid var(--line-2);
+  color:var(--fg);font-size:var(--t-lg);font-weight:800;padding:0}
+.quickrow button:active{background:var(--surface-2)}
+.matrix{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:var(--s2)}
+.quad{display:flex;flex-direction:column;min-height:0;overflow:hidden;border:1px solid var(--line-2);background:var(--surface)}
+.quad.inbox{flex:0 0 auto;max-height:136px;border-color:#5a5a5a;background:var(--surface-2)}
+.quad.inbox .qnum,.quad.inbox .qcount,.quad.inbox .qlab b{color:var(--acc)}
+.qh2{flex:0 0 auto;display:grid;grid-template-columns:20px 1fr auto;gap:6px;align-items:center;
+  padding:6px var(--s2);border-bottom:1px solid rgba(255,255,255,.08)}
+.qnum{font-size:var(--t-xs);font-weight:800;text-align:center;line-height:1}
+.qlab{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.qlab b,.qlab i{font-size:var(--t-xs);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qlab b{font-weight:800;letter-spacing:.06em}
+.qlab i{font-style:normal;letter-spacing:.04em;color:var(--fg-3)}
+.qcount{font-size:var(--t-sm);font-weight:800;min-width:14px;text-align:right}
+.qbody{flex:1;min-height:0;overflow-y:auto;padding:0 var(--s1) var(--s1)}
+.quad.q1{background:#0d0d0d;border-color:#7a4a4a}
+.quad.q1 .qnum,.quad.q1 .qcount,.quad.q1 .qlab b{color:#ee9999}
+.quad.q2{background:#161616;border-color:#7a6a3f}
+.quad.q2 .qnum,.quad.q2 .qcount,.quad.q2 .qlab b{color:var(--warn)}
+.quad.q3{background:#1d1d1d;border-color:#4f6478}
+.quad.q3 .qnum,.quad.q3 .qcount,.quad.q3 .qlab b{color:var(--info)}
+.quad.q4{background:#242424;border-color:#5a5a5a}
+.quad.q4 .qnum,.quad.q4 .qcount,.quad.q4 .qlab b{color:#b4b4b4}
+.quad.q4 .qlab i,.quad.q4 .qempty{color:#9a9a9a}
+.todo-item{display:flex;align-items:center;min-height:40px;border-bottom:1px solid rgba(255,255,255,.07)}
+.todo-item:last-child{border:0}
+.tbox{flex:0 0 auto;width:40px;height:40px;background:none;border:0;padding:0;color:var(--fg-2);font-size:var(--t-sm);font-weight:800;line-height:1}
+.ttext{flex:1;min-width:0;font-size:12px;line-height:1.35;overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto;color:var(--fg);cursor:pointer;padding:6px 0}
+.tmore{flex:0 0 auto;width:32px;height:40px;background:none;border:0;padding:0;color:var(--fg-3);font-size:var(--t-md);line-height:1}
+.tmore[aria-expanded="true"]{color:var(--acc)}
+.todo-item.done .ttext{color:var(--fg-3);text-decoration:line-through}
+.todo-item.done .tbox{color:var(--acc)}
+.qempty{font-size:var(--t-xs);color:var(--fg-3);padding:var(--s2) var(--s1)}
+.tpick{display:flex;flex-wrap:wrap;gap:var(--s1);padding:var(--s1) 0 var(--s2) var(--s1)}
+.tpick button{min-height:40px;min-width:36px;padding:0 var(--s2);background:var(--bg);border:1px solid #5a5a5a;
+  color:var(--fg);font-size:var(--t-xs);letter-spacing:.04em}
+.tpick button.sel{border-color:var(--acc);color:var(--acc);font-weight:800}
+.tpick button.sel::before{content:"■ "}
+.tpick .tpdel{border-color:var(--bad-line);color:var(--bad);margin-left:auto}
+
+/* ── 9. Navigation ── */
+nav{position:fixed;z-index:30;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line-2);
+  display:grid;grid-template-columns:repeat(4,1fr) 1.35fr;
+  padding:6px max(4px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left))}
+nav button{min-height:48px;background:none;border:0;border-top:2px solid transparent;color:var(--fg-3);padding:0 2px;
+  font-size:var(--t-sm);font-weight:800;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav button.sel{color:var(--acc);background:var(--surface);border-top-color:var(--acc)}
+nav button.cur{color:var(--acc-2);background:var(--surface);border-top-color:var(--acc-2)}
+nav button.sel::before,nav button.cur::before{content:"> "}
+nav button:active{background:var(--surface-2);color:var(--fg)}
+.nav-more{position:relative;display:flex;min-width:0}
+.nav-more>button{flex:1;width:100%}
+.nav-more>button::after{content:"▴";font-size:9px;margin-left:3px;vertical-align:1px}
+.nav-more>button[aria-expanded="true"]::after{content:"▾"}
+.nav-pop{position:absolute;bottom:calc(100% + 8px);right:0;z-index:31;min-width:176px;padding:var(--s1);
+  background:var(--bg);border:1px solid var(--line-2);box-shadow:0 8px 24px rgba(0,0,0,.8)}
+.nav-pop button{display:block;width:100%;min-height:var(--tap);margin:0 0 2px;padding:0 var(--s3);text-align:left;
+  background:var(--surface);border-top:0;color:var(--fg-2);font-size:var(--t-sm)}
+.nav-pop button:last-child{margin:0}
+.nav-pop button.sel{background:var(--surface-2)}
+.nav-pop button::after{content:none}
+/* sehr schmale Displays (iPhone SE 1. Gen.): Reiternamen passen ohne Abschneiden */
+@media (max-width:359px){nav button{font-size:var(--t-xs);letter-spacing:0}}
+
+/* ── 10. Overlays & Meldungen ── */
+.storewarn{position:fixed;z-index:40;left:0;right:0;bottom:var(--nav-h);background:#3a1212;color:#ffc4c4;
+  border-top:1px solid #a33;padding:var(--s2) var(--pad);font-size:var(--t-xs);letter-spacing:.04em}
 .dayoverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.82);opacity:0;transition:opacity .22s ease}
 .dayoverlay.on{opacity:1}
-.dobox{border:1px solid #69ff69;background:#0d0d0d;padding:26px 24px;max-width:88vw;
-  transform:translateY(6px);transition:transform .22s ease}
+.dobox{border:1px solid var(--acc);background:#0d0d0d;padding:var(--s5);max-width:88vw;transform:translateY(6px);transition:transform .22s ease}
 .dayoverlay.on .dobox{transform:translateY(0)}
-.doline{font-size:12px;letter-spacing:.14em;color:#69ff69;margin-bottom:16px}
-.dobar{font-size:13px;letter-spacing:1px;color:#69ff69;word-break:break-all;line-height:1;
-  text-shadow:0 0 10px rgba(105,255,105,.35)}
-.dopct{font-size:44px;font-weight:800;color:#69ff69;line-height:1;margin-top:12px;letter-spacing:-.02em}
-.dostreak{font-size:11px;letter-spacing:.12em;color:#9a9a9a;margin-top:10px}
-.docur{margin-top:14px}
+.doline{font-size:var(--t-sm);letter-spacing:.14em;color:var(--acc);margin-bottom:var(--s4)}
+.dobar{font-size:var(--t-sm);letter-spacing:1px;color:var(--acc);word-break:break-all;line-height:1;text-shadow:0 0 10px var(--acc-glow)}
+.dopct{font-size:44px;font-weight:800;color:var(--acc);line-height:1;margin-top:var(--s3);letter-spacing:-.02em}
+.dostreak{font-size:var(--t-xs);letter-spacing:.12em;color:var(--fg-2);margin-top:var(--s2)}
+.docur{margin-top:var(--s3)}
+/* Wisch-Rückmeldung (v3.4: hängt jetzt am tatsächlich vorhandenen <main>) */
+main{transition:transform .12s ease-out,opacity .12s ease-out}
+main.swipe-left{transform:translateX(-24px);opacity:.6}
+main.swipe-right{transform:translateX(24px);opacity:.6}
+
+/* ── 11. Hover — nur bei Geräten mit Maus ── */
+@media (hover:hover){
+  .wide:hover,button.card:hover,.history-row:hover,.habit-pick:hover,.periodnav>button:hover,.tlbtn:hover,
+  .seg button:hover,.days button:hover,.tpick button:hover,.quickrow button:hover,.phead-btn:hover,.pjump:hover{border-color:var(--fg-3)}
+  button.tlrow:hover,.nav-pop button:hover{background:var(--surface)}
+  nav button:hover{color:var(--fg)}
+  .tbox:hover,.tmore:hover,.archive>summary:hover{color:var(--acc)}
+  .counter button:hover{background:var(--surface)}
+}
+
+/* ── 12. Bewegung reduzieren ── */
 @media (prefers-reduced-motion: reduce){
-  .dayoverlay,.dobox{transition:none}
+  .dayoverlay,.dobox,main{transition:none}
+  main.swipe-left,main.swipe-right{transform:none;opacity:1}
   .cursor{animation:none}
 }
 </style>
@@ -401,12 +409,12 @@ button.tlrow:active{background:#151515}
    ══════════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════
-   HABITDOS v3.3 — Terminal Habit Tracker
+   HABITDOS v3.4 — Terminal Habit Tracker
    ═══════════════════════════════════════════════════════════════ */
 
 const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
 const SCROLLKEY="habitdos.v1_7.scroll";
-const APP_VERSION="3.3";
+const APP_VERSION="3.4";
 /* ── v3.1: Serien, die den Habit-Typ respektieren ──
    Täglich / feste Tage : zählt fällige Tage; nicht fällige Tage werden
                           übersprungen, ein heute noch offener Tag bricht nicht.
@@ -558,6 +566,10 @@ let lastRenderedTab=null;
 let pickerTodoId=null;
 /* ── Habit Editor ── */
 let editId=null,editFreq={type:"daily"},editDays=[];
+/* v3.4: Editor offen? Dann wechseln weder Pfeiltasten noch Wischen den Reiter. */
+let editorOpen=false;
+/* v3.4: Unterseiten markieren ihren Eltern-Reiter in der Navigation. */
+const PARENT_TAB={historyWeek:"history",historyMonth:"history",habitHistory:"stats"};
 
 /* ── Init ── */
 /* v2.1 (B5): keep the "time since last count" label fresh without a full re-render */
@@ -935,7 +947,12 @@ function allTimeStats(){
    Erzeugt HTML aus den Daten. Keine Datenänderungen.
    ══════════════════════════════════════════════════════════════════ */
 
-function streakTxt(s,key){return `${key} ${s[key==="STREAK"?"current":"best"]}${s.unit==="W"?" WO":""}`}
+function streakTxt(s,key){return `${key==="STREAK"?"SERIE":"BESTE"} ${s[key==="STREAK"?"current":"best"]}${s.unit==="W"?" WO":""}`}
+/* v3.4: Farbstufe für Heatmap & Habit-Verlauf */
+function heatCls(p){return p>=90?"lv4":p>=70?"lv3":p>=40?"lv2":"lv1"}
+/* v3.4: Wochentage in der Anzeige ab Montag; gespeichert bleibt 1=SO … 7=SA */
+const monFirst=a=>[...a].sort((x,y)=>((x+5)%7)-((y+5)%7));
+const DAY_ORDER=[2,3,4,5,6,7,1];
 
 function msgBanner(t){return`<div class="milestone">*** ${esc(t)} ***</div>`}
 function milestoneBanner(n){
@@ -947,13 +964,14 @@ function milestoneBanner(n){
 function saveScroll(){try{const pos=window.scrollY;let map=getStore(SCROLLKEY,{});map[tab]=pos;putStore(SCROLLKEY,map);}catch(e){}}
 function restoreScroll(){try{let map=getStore(SCROLLKEY,{});const pos=map[tab]||0;requestAnimationFrame(()=>window.scrollTo(0,pos));}catch(e){}}
 
-function ftxt(h){
-  let f=h.freq;
+/* v3.4: eine Beschriftung für alle Frequenzen (vorher fehlte LIMIT im Habit-Verlauf) */
+function freqLabel(f){
   if(f.type==="daily")return"TÄGLICH";
   if(f.type==="times")return`${f.count}× / WOCHE · FLEXIBEL`;
   if(f.type==="limit")return`MAX ${f.max}× / TAG · LIMIT`;
-  return f.days.map(n=>weekdays[n-1]).join(" · ");
+  return monFirst(f.days||[]).map(n=>weekdays[n-1]).join(" · ");
 }
+function ftxt(h){return freqLabel(h.freq)}
 function mark(h,d){
   if(isLimit(h,d)){
     const c=limitCount(h,d), mx=limitMax(h,d);
@@ -968,19 +986,50 @@ function mark(h,d){
 /* v1.8: progress label that makes the goal-period explicit */
 function progLabel(h,p){
   const f=freqForDate(h,today());
-  if(f.type==="times")return`${p.done}/${p.target} THIS WEEK`;
+  if(f.type==="times")return`${p.done}/${p.target} · WOCHE`;
   if(f.type==="limit")return`${limitCount(h,today())}/${f.max} HEUTE`;
   return`${p.done}/${p.target}`;
 }
 
 /* ── Prompt-style header ── */
-function header(t,s=""){
-  const promptPath = `C:\\HABITDOS\\${t}`;
-  return`<header><div class="brand">HABITDOS v${APP_VERSION}</div><h1><span class="prompt">${promptPath}&gt;</span>${t}<span class="cursor"></span></h1>${s?`<div class="sub">${esc(s)}</div>`:""}<hr></header>`;
+/* ── v3.4: ein Seitenkopf für alle Seiten ──
+   t     Titel (wird escaped)
+   ctx   Kontext rechts, z.B. Datum (wird escaped)
+   right fertiges HTML rechts statt ctx (z.B. ein Button)
+   below fertiges HTML unter der Titelzeile (z.B. die Zusammenfassung) */
+function header(t,ctx="",right="",below=""){
+  return `<header class="phead"><div class="phead-row">`+
+    `<h1 class="phead-title"><span class="p" aria-hidden="true">&gt;</span><span class="t">${esc(t)}</span><span class="cursor" aria-hidden="true"></span></h1>`+
+    (right||(ctx?`<span class="phead-ctx">${esc(ctx)}</span>`:""))+
+    `</div>${below}</header>`;
 }
 
-function summary(x,l="WEEK"){
-  return`<div class="hero"><div class="hero-top"><small>${l}</small><span class="hero-pct" data-pct="${x.p}" data-suffix="%">${x.p}%</span></div><div class="hero-bar" data-fill="${barFill(x.done,x.target,20)}" data-w="20">${bar(x.done,x.target,20)}</div><div class="hero-sub">${x.done} / ${x.target} erledigt</div></div>`;
+/* ── v3.4: eine Zusammenfassung für alle Ansichten ──
+   r     Text rechts; ohne Angabe "x / y erledigt"
+   boxed Rahmen (Seiteninhalt) oder randlos (im TODAY-Kopf) */
+function summary(x,r=null,boxed=true){
+  const done=x.target>0&&x.p===100;
+  const right=r!=null?r:`${x.done} / ${x.target} erledigt`;
+  return `<div class="sum${boxed?" box":""}${done?" done":""}">`+
+    `<span class="sum-l"><b class="hero-pct" data-pct="${x.p}" data-suffix="%">${x.p}%</b>`+
+    `<span class="hero-bar" data-fill="${barFill(x.done,x.target,12)}" data-w="12" aria-hidden="true">${bar(x.done,x.target,12)}</span></span>`+
+    `<span class="sum-r">${right}</span></div>`;
+}
+function statusTag(st){
+  return st==="current"?'<span class="status-tag current">AKTUELL</span>'
+        :st==="future"?'<span class="status-tag">ZUKÜNFTIG</span>'
+        :'<span class="status-tag">ARCHIV</span>';
+}
+/* ‹ Zeitraum › — o: {prev,next,prevL,nextL,label,sub,jump,jumpL}; Aktionen sind feste Code-Strings */
+function periodNav(o){
+  return `<div class="periodnav">`+
+    `<button onclick="${o.prev}" aria-label="${o.prevL}">‹</button>`+
+    `<div class="pmid"><span>${o.label}</span>${o.sub?`<small>${o.sub}</small>`:""}`+
+      (o.jump?`<button class="pjump" onclick="${o.jump}">${o.jumpL}</button>`:"")+`</div>`+
+    `<button onclick="${o.next}" aria-label="${o.nextL}">›</button></div>`;
+}
+function emptyState(t){
+  return `<div class="empty"><p>${esc(t)}</p><button class="wide primary" onclick="editor()">+ HABIT ANLEGEN</button></div>`;
 }
 
 /* v2.6: kompakte Zweizeiler für die enge 2x2-Ansicht */
@@ -995,7 +1044,7 @@ function qroman(q){return{1:"I",2:"II",3:"III",4:"IV"}[q]}
 function shortFreq(h){
   const f=freqForDate(h,today());
   if(f.type==="daily")return "TÄGL";
-  if(f.type==="days")return f.days.map(n=>weekdays[n-1]).join("·");
+  if(f.type==="days")return monFirst(f.days).map(n=>weekdays[n-1]).join("·");
   return "";
 }
 function shortSince(h){
@@ -1004,12 +1053,12 @@ function shortSince(h){
   if(t==="GERADE EBEN")return "JETZT";
   return t.replace(/^VOR /,"");
 }
-function tlSection(title){return `<div class="tlsec">── ${title}</div>`}
+function tlSection(title){return `<div class="tlsec">${title}</div>`}
 function sofortSection(){
   const items=todos.filter(t=>t.q===1&&!t.done);
   if(!items.length)return "";
   return tlSection(`SOFORT · ${items.length}`)+items.map(t=>
-    `<button class="tlrow" data-act="toggleTodo" data-id="${esc(t.id)}"><span class="tlck">[ ]</span><span class="tlname">${esc(t.text)}</span></button>`
+    `<button class="tlrow" data-act="toggleTodo" data-id="${esc(t.id)}" aria-pressed="false"><span class="tlck" aria-hidden="true">[ ]</span><span class="tlname">${esc(t.text)}</span></button>`
   ).join("");
 }
 function limitRow(h){
@@ -1018,27 +1067,27 @@ function limitRow(h){
   const st=!evaluated?"open":(over?"over":(c===mx?"edge":"ok"));
   const count=evaluated?`${c}/${mx}`:`–/${mx}`;
   const zero=(c===0)
-    ? `<button class="tlbtn tlzero${conf?" on":""}" data-act="limitZeroById" data-id="${esc(h.id)}" aria-label="${conf?"Bestätigung zurücknehmen":"Null bestätigen"}">${conf?"0✓":"0?"}</button>`
+    ? `<button class="tlbtn tlzero${conf?" on":""}" data-act="limitZeroById" data-id="${esc(h.id)}" aria-pressed="${conf}" aria-label="${esc(h.name)}: ${conf?"Bestätigung zurücknehmen":"heute null bestätigen"}">${conf?"0✓":"0?"}</button>`
     : "";
   return `<div class="tlrow tllimit st-${st} noswipe">`+
-    `<span class="tlcount">${count}</span>`+
+    `<span class="tlcount" aria-label="${evaluated?`${c} von ${mx}`:`noch nicht erfasst, Maximum ${mx}`}">${count}</span>`+
     `<span class="tlname">${esc(h.name)}</span>`+
     `<span class="tlmeta" data-since-habit="${esc(h.id)}" data-since-short="1">${shortSince(h)}</span>`+
     zero+
-    `<button class="tlbtn" data-act="limitDecById" data-id="${esc(h.id)}" aria-label="Eins weniger">−</button>`+
-    `<button class="tlbtn" data-act="limitIncById" data-id="${esc(h.id)}" aria-label="Eins mehr">+</button>`+
+    `<button class="tlbtn" data-act="limitDecById" data-id="${esc(h.id)}" aria-label="${esc(h.name)}: eins weniger">−</button>`+
+    `<button class="tlbtn" data-act="limitIncById" data-id="${esc(h.id)}" aria-label="${esc(h.name)}: eins mehr">+</button>`+
   `</div>`;
 }
 function habitRow(h){
   const d=done(h,today());
-  return `<button class="tlrow${d?" done":""}" data-act="toggleById" data-id="${esc(h.id)}">`+
+  return `<button class="tlrow${d?" done":""}" data-act="toggleById" data-id="${esc(h.id)}" aria-pressed="${d}">`+
     `<span class="tlck" data-habit-chk="${esc(h.id)}">${mark(h,today())}</span>`+
     `<span class="tlname">${esc(h.name)}</span>`+
     `<span class="tlmeta">${shortFreq(h)}</span></button>`;
 }
 function flexRow(h){
   const p=weekProgVersioned(h,today()), dT=done(h,today()), reached=p.done>=p.target;
-  return `<button class="tlrow${reached?" reached":""}" data-act="toggleById" data-id="${esc(h.id)}">`+
+  return `<button class="tlrow${reached?" reached":""}" data-act="toggleById" data-id="${esc(h.id)}" aria-pressed="${dT}">`+
     `<span class="tlck" data-habit-chk="${esc(h.id)}">${dT?'<span class="chk donegreen">[X]</span>':'<span class="chk">[ ]</span>'}</span>`+
     `<span class="tlname">${esc(h.name)}</span>`+
     `<span class="tlmeta"><span class="tlbar">${bar(p.done,p.target,5)}</span> ${p.done}/${p.target}</span></button>`;
@@ -1051,14 +1100,10 @@ function todayView(){
   const oblSorted=[...obl.filter(h=>!isDoneObl(h)),...obl.filter(isDoneObl)];
   const dateShort=new Intl.DateTimeFormat("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"}).format(today()).toUpperCase().replace(/\.,?/,"").replace(",","");
   const statR=obl.length?`${x.done}/${x.target}${streak>=2?` · SERIE ${streak}`:""}`:"KEINE PFLICHT";
-  const head=`<div class="tlsticky">`+
-    `<div class="tlhead"><span class="tltitle">&gt; TODAY<span class="cursor"></span></span><span class="tldate">${dateShort}</span></div>`+
-    `<div class="tlstat"><span><b class="hero-pct" data-pct="${x.p}" data-suffix="%">${x.p}%</b> `+
-    `<span class="hero-bar" data-fill="${barFill(x.done,x.target,10)}" data-w="10">${bar(x.done,x.target,10)}</span></span>`+
-    `<span class="tlstatr">${statR}</span></div></div>`;
+  const head=header("TODAY",dateShort,"",summary(x,statR,false));
   let body="";
   if(!active().length){
-    body=`<div class="hint">Noch keine Habits.</div><button class="wide" onclick="setTab('habits')">ZU HABITS</button>`;
+    body=emptyState("Noch keine Habits. Leg deinen ersten an.");
   }else{
     body+=sofortSection();
     body+=tlSection("PFLICHT");
@@ -1071,31 +1116,32 @@ function weekView(){
   const wStart=viewedWeek, ds=week(wStart);
   const st=weekStatus(wStart);
   const ps=active().map(h=>weekProgVersioned(h,wStart)), x=total(ps);
-  const tag=st==="current"?'<span class="status-tag current">CURRENT</span>'
-           :st==="future"?'<span class="status-tag future">FUTURE</span>'
-           :'<span class="status-tag">ARCHIVED</span>';
   const wn=weekNumber(wStart);
   const range=`${ds[0].toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${ds[6].toLocaleDateString("de-DE",{day:"numeric",month:"short",year:"numeric"})}`;
-  // completion banner
-  const complete = x.p===100
-    ? `<div class="completebar done"><div class="cbig">100%</div><div class="cstat">COMPLETE</div></div>`
-    : `<div class="completebar"><div class="cbig">${x.p}%</div><div class="cstat">${100-x.p}% MISSED</div></div>`;
-  const jump = st!=="current" ? `<button class="wide secondary" onclick="viewedWeek=mon(today());render()">CURRENT</button>` : "";
-  return`<main>${header("WEEK",range)}<div class="periodnav"><button onclick="weekNav(-1)">‹</button><div class="pmid">WEEK ${wn}${tag}<small>${range}</small></div><button onclick="weekNav(1)">›</button></div>${complete}${jump}<div class="table"><div class="wh"><span>HABIT</span>${ds.map(d=>`<span>${weekdays[d.getDay()]}<br>${d.getDate()}</span>`).join("")}</div>${active().map(h=>{let p=weekProgVersioned(h,wStart);return`<div class="wr"><div><b>${esc(h.name)}</b><small>${progLabel(h,p)}</small></div>${ds.map(d=>`<span>${mark(h,d)}</span>`).join("")}</div>`}).join("")}</div><div class="hint">${st==="archived"?"READ ONLY · vergangene Woche. ":st==="future"?"Zukünftige Woche. ":""}WEEK ist eine reine Übersicht. Abhaken erfolgt in TODAY.</div></main>`;
+  // Zusammenfassung: Status rechts statt eigenem Banner
+  const right = x.target===0 ? "KEINE ZIELE"
+    : `${x.done}/${x.target} · ${x.p===100?"KOMPLETT":`${100-x.p}% OFFEN`}`;
+  const nav=periodNav({prev:"weekNav(-1)",next:"weekNav(1)",prevL:"Vorherige Woche",nextL:"Nächste Woche",
+    label:`KW ${wn}${statusTag(st)}`,sub:range,
+    jump:st!=="current"?"viewedWeek=mon(today());render()":"",jumpL:"ZUR AKTUELLEN WOCHE"});
+  if(!active().length)return `<main>${header("WEEK")}${nav}${emptyState("Noch keine Habits für die Wochenübersicht.")}</main>`;
+  const tk=k(today());
+  const tc=d=>k(d)===tk?' class="today"':"";
+  return`<main>${header("WEEK")}${nav}${summary(x,right)}<div class="table"><div class="wh"><span>HABIT</span>${ds.map(d=>`<span${tc(d)}>${weekdays[d.getDay()]}<br>${d.getDate()}</span>`).join("")}</div>${active().map(h=>{let p=weekProgVersioned(h,wStart);return`<div class="wr"><div><b>${esc(h.name)}</b><small>${progLabel(h,p)}</small></div>${ds.map(d=>`<span${tc(d)}>${mark(h,d)}</span>`).join("")}</div>`}).join("")}</div><div class="hint">${st==="archived"?"Nur lesen · vergangene Woche. ":st==="future"?"Zukünftige Woche. ":""}WEEK ist eine reine Übersicht. Abhaken erfolgt in TODAY.</div></main>`;
 }
 function monthView(){
   const st=monthStatus(month);
   const ps=active().map(h=>monthProgVersioned(h,month)), x=total(ps);
-  const tag=st==="current"?'<span class="status-tag current">CURRENT</span>'
-           :st==="future"?'<span class="status-tag future">FUTURE</span>'
-           :'<span class="status-tag">ARCHIVED</span>';
-  const mlabel=month.toLocaleDateString("de-DE",{month:"long",year:"numeric"});
-  const jump = st!=="current" ? `<button class="wide secondary" onclick="month=new Date(today().getFullYear(),today().getMonth(),1);render()">CURRENT MONTH</button>` : "";
+  const mlabel=month.toLocaleDateString("de-DE",{month:"long",year:"numeric"}).toUpperCase();
+  const nav=periodNav({prev:"changeMonth(-1)",next:"changeMonth(1)",prevL:"Vorheriger Monat",nextL:"Nächster Monat",
+    label:`${mlabel}${statusTag(st)}`,
+    jump:st!=="current"?"month=new Date(today().getFullYear(),today().getMonth(),1);render()":"",jumpL:"ZUM AKTUELLEN MONAT"});
+  if(!active().length)return `<main>${header("MONTH")}${nav}${emptyState("Noch keine Habits für die Monatsübersicht.")}</main>`;
   // week rows (10)
   const wStarts=monthWeekStarts(month);
   const weekRows=`<div class="section-title">WOCHEN</div><div class="weekrows">${wStarts.map(w=>{
     const wo=weekOverallInMonth(w), cur=k(mon(today()))===k(w);
-    return `<div class="weekrow ${cur?"cur":""}"><span class="wlabel">W${weekNumber(w)}</span><span class="wbar">${bar(wo.done,wo.target,18)}</span><span class="wpct">${wo.p}%</span></div>`;
+    return `<div class="weekrow ${cur?"cur":""}"><span class="wlabel">KW${weekNumber(w)}</span><span class="wbar">${bar(wo.done,wo.target,18)}</span><span class="wpct">${wo.p}%</span></div>`;
   }).join("")}</div>`;
   // month comparison vs previous (11)
   const prevM=new Date(month.getFullYear(),month.getMonth()-1,1);
@@ -1108,17 +1154,20 @@ function monthView(){
   }
   // best / worst month across all history (12)
   const bw=bestWorstMonths();
-  const bwBlock = bw ? `<div class="section-title">EXTREME</div><div class="superlate"><span>BEST</span><b>${bw.best.label} · ${bw.best.p}%</b></div><div class="superlate"><span>LOWEST</span><b>${bw.worst.label} · ${bw.worst.p}%</b></div>` : "";
-  return`<main>${header("MONTH")}<div class="periodnav"><button onclick="changeMonth(-1)">‹</button><div class="pmid">${mlabel}${tag}</div><button onclick="changeMonth(1)">›</button></div>${summary(x,"MONTH")}${jump}${weekRows}<div class="section-title">HABITS</div>${active().map(h=>{let p=monthProgVersioned(h,month);return`<div class="card"><div class="row"><b>${esc(h.name)}</b><span>${p.p}%</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,14)}</span><span>${p.done}/${p.target}</span></div></div>`}).join("")}${cmp}${bwBlock}<div class="hint">MONATSANSICHT · FLEXIBLE HABITS werden nach Montag-basierten Wochen bewertet. Wischen wechselt den Monat.</div></main>`;
+  const bwBlock = bw ? `<div class="section-title">EXTREMWERTE</div><div class="superlate"><span>BESTER</span><b>${bw.best.label} · ${bw.best.p}%</b></div><div class="superlate"><span>SCHWÄCHSTER</span><b>${bw.worst.label} · ${bw.worst.p}%</b></div>` : "";
+  return`<main>${header("MONTH")}${nav}${summary(x)}${weekRows}<div class="section-title">HABITS</div>${active().map(h=>{let p=monthProgVersioned(h,month);return`<div class="card"><div class="row"><b>${esc(h.name)}</b><span>${p.p}%</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,14)}</span><span>${p.done}/${p.target}</span></div></div>`}).join("")}${cmp}${bwBlock}<div class="hint">Flexible Habits werden nach Wochen ab Montag bewertet. Wischen wechselt den Monat.</div></main>`;
 }
 function archivedWeekView(start){
   const ds=week(start), ps=active().map(h=>weekProgVersioned(h,start)), x=total(ps);
-  return `<main>${header("WEEK · ARCHIVE",`${ds[0].toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${ds[6].toLocaleDateString("de-DE",{day:"numeric",month:"short",year:"numeric"})}`)}<div class="readonly">READ ONLY · VERGANGENE WOCHE</div>${summary(x,"WEEK · ARCHIVE")}<div class="table"><div class="wh"><span>HABIT</span>${ds.map(d=>`<span>${weekdays[d.getDay()]}<br>${d.getDate()}</span>`).join("")}</div>${active().map(h=>{let p=weekProgVersioned(h,start);return`<div class="wr"><div><b>${esc(h.name)}</b><small>${p.done}/${p.target}</small></div>${ds.map(d=>`<span>${mark(h,d)}</span>`).join("")}</div>`}).join("")}</div><button class="wide" onclick="setTab('history')">‹ HISTORY</button></main>`;
+  const range=`${ds[0].toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${ds[6].toLocaleDateString("de-DE",{day:"numeric",month:"short",year:"numeric"})}`;
+  return `<main>${header("WEEK · ARCHIV",`KW ${weekNumber(start)}`)}<div class="readonly">NUR LESEN · ${range}</div>${summary(x)}<div class="table"><div class="wh"><span>HABIT</span>${ds.map(d=>`<span>${weekdays[d.getDay()]}<br>${d.getDate()}</span>`).join("")}</div>${active().map(h=>{let p=weekProgVersioned(h,start);return`<div class="wr"><div><b>${esc(h.name)}</b><small>${p.done}/${p.target}</small></div>${ds.map(d=>`<span>${mark(h,d)}</span>`).join("")}</div>`}).join("")}</div><button class="wide secondary" onclick="setTab('history')">‹ HISTORY</button></main>`;
 }
 
 function archivedMonthView(m){
   const ps=active().map(h=>monthProgVersioned(h,m)),x=total(ps);
-  return `<main>${header("MONTH · ARCHIVE")}<div class="monthnav"><button onclick="historyMonth(-1)">‹</button><b>${m.toLocaleDateString("de-DE",{month:"long",year:"numeric"})}</b><button onclick="historyMonth(1)">›</button></div><div class="readonly">READ ONLY · MONATLICHES ARCHIV</div>${summary(x,"MONTH · ARCHIVE")}${active().map(h=>{let p=monthProgVersioned(h,m);return`<div class="card"><div class="row"><b>${esc(h.name)}</b><span>${p.p}%</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,14)}</span><span>${p.done}/${p.target}</span></div></div>`}).join("")}<button class="wide" onclick="setTab('history')">‹ HISTORY</button></main>`;
+  const nav=periodNav({prev:"historyMonth(-1)",next:"historyMonth(1)",prevL:"Vorheriger Monat",nextL:"Nächster Monat",
+    label:m.toLocaleDateString("de-DE",{month:"long",year:"numeric"}).toUpperCase()});
+  return `<main>${header("MONTH · ARCHIV")}${nav}<div class="readonly">NUR LESEN · MONATSARCHIV</div>${summary(x)}${active().map(h=>{let p=monthProgVersioned(h,m);return`<div class="card"><div class="row"><b>${esc(h.name)}</b><span>${p.p}%</span></div><div class="meta"><span class="mbar">${bar(p.done,p.target,14)}</span><span>${p.done}/${p.target}</span></div></div>`}).join("")}<button class="wide secondary" onclick="setTab('history')">‹ HISTORY</button></main>`;
 }
 
 function historyView(){
@@ -1130,33 +1179,36 @@ function historyView(){
     Array.from({length:12},(_,mi)=>{
       const mm=new Date(y,mi,1);
       const label=mm.toLocaleDateString("de-DE",{month:"short"}).toUpperCase();
-      if(mm>today())return `<div class="heat-row"><span class="hm">${label}</span><span class="hbar" style="color:#333">${"░".repeat(20)}</span><span class="hp" style="color:#555">–</span></div>`;
+      if(mm>today())return `<div class="heat-row"><span class="hm">${label}</span><span class="hbar lv0" aria-hidden="true">${"░".repeat(20)}</span><span class="hp lv1">–</span></div>`;
       const o=monthOverall(mm);
-      const col=o.p>=90?"#69ff69":o.p>=70?"#4ea84e":o.p>=40?"#888":"#666";
-      return `<div class="heat-row"><span class="hm">${label}</span><span class="hbar" style="color:${col}">${bar(o.p,100,20)}</span><span class="hp">${o.target?o.p+"%":"–"}</span></div>`;
+      return `<div class="heat-row"><span class="hm">${label}</span><span class="hbar ${heatCls(o.p)}" aria-hidden="true">${bar(o.p,100,20)}</span><span class="hp">${o.target?o.p+"%":"–"}</span></div>`;
     }).join("")
   }</div>`;
-  return `<main>${header("HISTORY",`Archiv · ${y}`)}<div class="periodnav"><button onclick="historyYearChange(-1)">‹</button><div class="pmid">${y}</div><button onclick="historyYearChange(1)">›</button></div>${heat}<div class="section-title">MONATE</div>${months.length?months.map(v=>{let label=v.month.toLocaleDateString("de-DE",{month:"short"}).toUpperCase();return`<button class="history-row" onclick="openHistoryMonth(${v.month.getFullYear()},${v.month.getMonth()})"><span><b>${label}</b><small>${v.p.done} / ${v.p.target}</small></span><span class="history-pct">${v.p.p}%</span></button>`}).join(""):'<div class="hint">NO ARCHIVE</div>'}<div class="section-title">WOCHEN</div>${historyWeeks(y).map(w=>`<button class="history-row" onclick="openHistoryWeek('${k(w)}')"><span><b>WEEK ${weekNumber(w)}</b><small>${w.toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${add(w,6).toLocaleDateString("de-DE",{day:"numeric",month:"short"})}</small></span><span class="history-pct">${total(active().map(h=>weekProgVersioned(h,w))).p}%</span></button>`).join("")}<button class="wide" onclick="setTab('today')">TODAY</button></main>`;
+  const nav=periodNav({prev:"historyYearChange(-1)",next:"historyYearChange(1)",prevL:"Vorheriges Jahr",nextL:"Nächstes Jahr",label:String(y)});
+  if(!active().length)return `<main>${header("HISTORY","ARCHIV")}${nav}${emptyState("Noch keine Habits, also auch noch kein Archiv.")}</main>`;
+  const wks=historyWeeks(y);
+  return `<main>${header("HISTORY","ARCHIV")}${nav}${heat}<div class="section-title">MONATE</div>${months.length?months.map(v=>{let label=v.month.toLocaleDateString("de-DE",{month:"short"}).toUpperCase();return`<button class="history-row" onclick="openHistoryMonth(${v.month.getFullYear()},${v.month.getMonth()})"><span><b>${label}</b><small>${v.p.done} / ${v.p.target}</small></span><span class="history-pct">${v.p.p}%</span></button>`}).join(""):'<div class="hint">Noch keine Daten in diesem Jahr.</div>'}<div class="section-title">WOCHEN</div>${wks.length?"":'<div class="hint">Noch keine abgeschlossenen Wochen.</div>'}${wks.map(w=>`<button class="history-row" onclick="openHistoryWeek('${k(w)}')"><span><b>KW ${weekNumber(w)}</b><small>${w.toLocaleDateString("de-DE",{day:"numeric",month:"short"})} – ${add(w,6).toLocaleDateString("de-DE",{day:"numeric",month:"short"})}</small></span><span class="history-pct">${total(active().map(h=>weekProgVersioned(h,w))).p}%</span></button>`).join("")}<button class="wide secondary" onclick="setTab('today')">‹ TODAY</button></main>`;
 }
 
 function statsView(){
   const hs=active().map(h=>({h,s:habitStats(h)}));
   const at=allTimeStats();
-  return `<main>${header("STATS","Gesamtübersicht")}
-  <div class="section-title">ALL TIME</div>
+  if(!hs.length)return `<main>${header("STATS","GESAMT")}${emptyState("Noch keine Habits, also noch keine Statistik.")}</main>`;
+  return `<main>${header("STATS","GESAMT")}
+  <div class="section-title">GESAMT</div>
   <div class="stats-grid">
-    <div class="stat"><small>COMPLETION</small><b>${at.p}%</b></div>
-    <div class="stat"><small>CHECKS</small><b>${at.checks}</b></div>
-    <div class="stat"><small>BEST STREAK</small><b>${at.bestStreak}</b></div>
-    <div class="stat"><small>WEEKS 100%</small><b>${at.weeks100}</b></div>
-    <div class="stat"><small>MONTHS 100%</small><b>${at.months100}</b></div>
+    <div class="stat"><small>QUOTE</small><b>${at.p}%</b></div>
+    <div class="stat"><small>HÄKCHEN</small><b>${at.checks}</b></div>
+    <div class="stat"><small>BESTE SERIE</small><b>${at.bestStreak}</b></div>
+    <div class="stat"><small>WOCHEN 100%</small><b>${at.weeks100}</b></div>
+    <div class="stat"><small>MONATE 100%</small><b>${at.months100}</b></div>
     <div class="stat"><small>HABITS</small><b>${hs.length}</b></div>
   </div>
   <div class="section-title">HABIT WÄHLEN</div>
-  ${hs.map(x=>`<button class="habit-pick" data-act="openHabitHistory" data-id="${esc(x.h.id)}">› ${esc(x.h.name)} · ${x.s.p}%</button>`).join("")}
+  ${hs.map(x=>`<button class="habit-pick" data-act="openHabitHistory" data-id="${esc(x.h.id)}"><span>› ${esc(x.h.name)}</span><span>${x.s.p}%</span></button>`).join("")}
   <div class="section-title">ÜBERSICHT</div>
-  ${hs.map(x=>`<div class="detail-card"><div class="row"><b>${esc(x.h.name)}</b><span class="${x.s.p>=90?"green":""}">${x.s.p}%</span></div><div class="mini-bar">${bar(x.s.p,100,20)}</div><div class="meta"><span>${streakTxt(x.s,"STREAK")}</span><span>${streakTxt(x.s,"BEST")}</span><span>TOTAL ${x.s.totalDone}</span></div></div>`).join("")}
-  <div class="hint">STATISTIKEN basieren auf den lokal gespeicherten Erledigungen. Vergangene Wochen und Monate bleiben unveränderbar.</div>
+  ${hs.map(x=>`<div class="detail-card"><div class="row"><b>${esc(x.h.name)}</b><span class="${x.s.p>=90?"green":""}">${x.s.p}%</span></div><div class="mini-bar">${bar(x.s.p,100,20)}</div><div class="meta"><span>${streakTxt(x.s,"STREAK")}</span><span>${streakTxt(x.s,"BEST")}</span><span>GESAMT ${x.s.totalDone}</span></div></div>`).join("")}
+  <div class="hint">Statistiken basieren auf den lokal gespeicherten Erledigungen. Vergangene Wochen und Monate bleiben unveränderbar.</div>
   </main>`;
 }
 function habitHistoryView(){
@@ -1176,8 +1228,7 @@ function habitHistoryView(){
       const p=monthProgVersioned(h,mm);
       if(p.target===0)continue;
       const label=mm.toLocaleDateString("de-DE",{month:"short"}).toUpperCase();
-      const col=p.p>=90?"#69ff69":p.p>=70?"#4ea84e":p.p>=40?"#888":"#666";
-      rows+=`<div class="habit-hist-row"><span class="hh-m">${label}</span><span class="hh-bar" style="color:${col}">${bar(p.p,100,16)}</span><span class="hh-p">${p.p}%</span></div>`;
+      rows+=`<div class="habit-hist-row"><span class="hh-m">${label}</span><span class="hh-bar ${heatCls(p.p)}" aria-hidden="true">${bar(p.p,100,16)}</span><span class="hh-p">${p.p}%</span></div>`;
     }
     if(rows)yearsBlocks+=`<div class="section-title">${y}</div>${rows}`;
   }
@@ -1187,16 +1238,25 @@ function habitHistoryView(){
   if(h.versions&&h.versions.length>1){
     cv=`<div class="section-title">VERLAUF</div>`+h.versions.slice().sort((a,b)=>a.from<b.from?-1:1).map(v=>{
       const d=v.from==="2000-01-01"?"START":parse(v.from).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
-      const f=v.freq;
-      const ftext=f.type==="daily"?"TÄGLICH":f.type==="times"?`${f.count}× / WOCHE`:f.days.map(n=>weekdays[n-1]).join(" · ");
-      return `<div class="superlate"><span>${d}</span><b>${ftext}</b></div>`;
+      return `<div class="superlate"><span>${d}</span><b>${freqLabel(v.freq)}</b></div>`;
     }).join("");
   }
-  return `<main>${header("HABIT","Einzelverlauf")}<div class="detail-card"><div class="row"><b>${esc(h.name)}</b><span class="${s.p>=90?"green":""}">${s.p}%</span></div><div class="mini-bar">${bar(s.p,100,20)}</div><div class="meta"><span>${streakTxt(s,"STREAK")}</span><span>${streakTxt(s,"BEST")}</span><span>TOTAL ${s.totalDone}</span></div></div>${cv}${yearsBlocks}<button class="wide" onclick="setTab('stats')">‹ STATS</button></main>`;
+  return `<main>${header("HABIT","EINZELVERLAUF")}<div class="detail-card"><div class="row"><b>${esc(h.name)}</b><span class="${s.p>=90?"green":""}">${s.p}%</span></div><div class="mini-bar">${bar(s.p,100,20)}</div><div class="meta"><span>${streakTxt(s,"STREAK")}</span><span>${streakTxt(s,"BEST")}</span><span>GESAMT ${s.totalDone}</span></div></div>${cv}${yearsBlocks}<button class="wide secondary" onclick="setTab('stats')">‹ STATS</button></main>`;
 }
 
 function habitsView(){
-  return`<main>${header("HABITS","Gewohnheiten verwalten")}${active().map(h=>{let s=habitStats(h);return`<button class="card habit" data-act="editor" data-id="${esc(h.id)}"><div class="row"><b>${esc(h.name)}</b><span>›</span></div><div class="meta"><span>${ftxt(h)}</span><span>${s.p}%</span><span>${streakTxt(s,"STREAK")}</span></div></button>`}).join("")}<button class="wide" onclick="editor()">+ HABIT HINZUFÜGEN</button><button class="wide secondary" onclick="showHabitStats()">STATISTIK</button><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label><button class="wide secondary danger" onclick="resetData()">DATEN ZURÜCKSETZEN</button><div class="hint">HABITDOS HTML v${APP_VERSION} · TAGESWECHSEL ${String(DAY_ROLLOVER_HOUR).padStart(2,"0")}:00 · ${offlineStatusText()}</div></main>`;
+  const act=active(), arch=habits.filter(h=>h.arch);
+  const card=(h,isArch)=>{let s=habitStats(h);return`<button class="card habit${isArch?" archived":""}" data-act="editor" data-id="${esc(h.id)}"><div class="row"><b>${esc(h.name)}</b><span aria-hidden="true">›</span></div><div class="meta"><span>${ftxt(h)}</span>${isArch?"<span>ARCHIVIERT</span>":`<span>${s.p}%</span><span>${streakTxt(s,"STREAK")}</span>`}</div></button>`};
+  /* v3.4: archivierte Habits sichtbar machen — sonst ist REAKTIVIEREN unerreichbar */
+  const archBlock=arch.length?`<details class="archive"${window._archOpen?" open":""} ontoggle="window._archOpen=this.open"><summary>ARCHIV (${arch.length})</summary>${arch.map(h=>card(h,true)).join("")}</details>`:"";
+  return`<main>${header("HABITS",`${act.length} AKTIV`)}`+
+    (act.length?act.map(h=>card(h,false)).join(""):`<div class="hint" style="margin-top:0">Noch keine aktiven Habits.</div>`)+
+    `<button class="wide primary" onclick="editor()">+ HABIT HINZUFÜGEN</button>`+
+    archBlock+
+    `<div class="section-title">AUSWERTUNG</div><button class="wide secondary" onclick="showHabitStats()">STATISTIK ÖFFNEN</button>`+
+    `<div class="section-title">DATEN</div><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label>`+
+    `<div class="section-title">GEFAHRENZONE</div><button class="wide danger" onclick="resetData()">ALLE DATEN ZURÜCKSETZEN</button>`+
+    `<div class="hint">HABITDOS HTML v${APP_VERSION} · TAGESWECHSEL ${String(DAY_ROLLOVER_HOUR).padStart(2,"0")}:00 · ${offlineStatusText()}</div></main>`;
 }
 
 /* v2.2: one renderer for every todo row, with an inline bucket picker. */
@@ -1205,9 +1265,11 @@ function todoRow(t){
       [[0,"AKTUELL"],[1,"I"],[2,"II"],[3,"III"],[4,"IV"]]
         .map(([q,lbl])=>`<button class="${(t.q??0)===q?'sel':''}" data-act="moveTodo" data-id="${esc(t.id)}" data-q="${q}">${lbl}</button>`).join("")
     }<button class="tpdel" data-act="delTodo" data-id="${esc(t.id)}">LÖSCHEN</button></div>` : "";
+  const open=pickerTodoId===t.id;
   return `<div class="todo-item ${t.done?"done":""}">`+
-    `<button class="tbox" data-act="toggleTodo" data-id="${esc(t.id)}">${t.done?"[X]":"[ ]"}</button>`+
+    `<button class="tbox" data-act="toggleTodo" data-id="${esc(t.id)}" aria-pressed="${!!t.done}" aria-label="Erledigt: ${esc(t.text)}">${t.done?"[X]":"[ ]"}</button>`+
     `<span class="ttext" data-act="togglePicker" data-id="${esc(t.id)}">${esc(t.text)}</span>`+
+    `<button class="tmore" data-act="togglePicker" data-id="${esc(t.id)}" aria-expanded="${open}" aria-label="Verschieben oder löschen">⋯</button>`+
     `</div>${picker}`;
 }
 function quadrant(q){
@@ -1218,7 +1280,7 @@ function quadrant(q){
     `<div class="qh2"><span class="qnum">${qroman(q)}</span>`+
       `<span class="qlab"><b>${l1}</b><i>${l2}</i></span>`+
       `<span class="qcount">${open}</span></div>`+
-    `<div class="qbody">${items.length?items.map(t=>todoRow(t)).join(""):'<div class="qempty">–</div>'}</div>`+
+    `<div class="qbody">${items.length?items.map(t=>todoRow(t)).join(""):'<div class="qempty">leer</div>'}</div>`+
   `</div>`;
 }
 /* AKTUELL = quick inbox (q:0), not yet sorted into the matrix */
@@ -1228,7 +1290,7 @@ function inboxSection(){
   return `<div class="quad inbox"><div class="qh2"><span class="qnum">&gt;</span>`+
     `<span class="qlab"><b>AKTUELL</b><i>UNSORTIERT</i></span>`+
     `<span class="qcount">${open}</span></div>`+
-    `<div class="qbody">${items.length?items.map(t=>todoRow(t)).join(""):'<div class="qempty">Nichts offen. Oben eintippen, Enter drückt ab.</div>'}</div></div>`;
+    `<div class="qbody">${items.length?items.map(t=>todoRow(t)).join(""):'<div class="qempty">Nichts offen. Oben eintippen und Enter drücken.</div>'}</div></div>`;
 }
 function todoView(){
   const open=todos.filter(t=>!t.done).length;
@@ -1236,33 +1298,34 @@ function todoView(){
   const q1=todos.filter(t=>t.q===1&&!t.done).length;
   // v2.6: fester Bildschirm — Kopf schlank, Matrix füllt den Rest.
   return`<main class="todoscreen">`+
-    `<div class="tdhead"><div class="brand">HABITDOS</div>`+
-      `<div class="tdstat"><span class="tdtitle">&gt; MATRIX<span class="cursor"></span></span>`+
-      `<span class="tdnums">${open} OFFEN${q1?` · ${q1} SOFORT`:""}</span></div></div>`+
-    `<div class="quickrow noswipe"><input id="quickadd" placeholder="Schnell eintragen…" onkeydown="quickAddKey(event)" autocomplete="off"><button onclick="quickAddTodo()">+</button></div>`+
+    header("MATRIX",`${open} OFFEN${q1?` · ${q1} SOFORT`:""}`)+
+    `<div class="quickrow noswipe"><input id="quickadd" placeholder="Schnell eintragen …" onkeydown="quickAddKey(event)" autocomplete="off" aria-label="Neue Aufgabe"><button onclick="quickAddTodo()" aria-label="Aufgabe hinzufügen">+</button></div>`+
     (inboxOpen||todos.some(t=>(t.q??0)===0)?inboxSection():"")+
     `<div class="matrix">${[1,2,3,4].map(q=>quadrant(q)).join("")}</div>`+
   `</main>`;
 }
 function tabs(){
-  const main=[["today","TODAY"],["todo",'<span class="navglyph">⊞</span>'],["week","WEEK"],["month","MONTH"]];
+  const main=[["today","TODAY"],["todo","TODO"],["week","WEEK"],["month","MONTH"]];
   const more=[["history","HISTORY"],["habits","HABITS"],["stats","STATS"]];
-  const moreSel=MORE_TABS.includes(tab);          // ein Unterpunkt ist die aktive Seite
+  const navTab=PARENT_TAB[tab]||tab;              // v3.4: Unterseiten zählen zum Eltern-Reiter
+  const moreSel=MORE_TABS.includes(navTab);       // ein Unterpunkt ist die aktive Seite
   const moreOpen=!!window._moreOpen;              // das Menü ist gerade aufgeklappt
   /* v3.0: drei eindeutige Zustände statt zwei.
      sel = grün, das ist gerade angetippt/aktiv
      cur = gedämpft, das ist die Seite dahinter, während das Menü offen ist
      (leer) = inaktiv */
   const mainBtns=main.map(x=>{
-    const isCur=(tab===x[0]);
+    const isCur=(navTab===x[0]);
     const cls=isCur ? (moreOpen ? "cur" : "sel") : "";
-    return `<button class="${cls}" onclick="setTab('${x[0]}')">${x[1]}</button>`;
+    return `<button class="${cls}" onclick="navTo('${x[0]}')"${isCur?' aria-current="page"':""}>${x[1]}</button>`;
   }).join("");
+  /* v3.4: Das Menü öffnet nur auf Tipp; ist eine Unterseite aktiv, trägt der Knopf ihren Namen. */
   const moreCls=(moreOpen||moreSel) ? "sel" : "";
-  const pop=(moreOpen||moreSel)
-    ? `<div class="nav-pop">${more.map(x=>`<button class="${tab===x[0]?"sel":""}" onclick="setTab('${x[0]}');window._moreOpen=false">${x[1]}</button>`).join("")}</div>`
+  const moreLabel=moreSel ? more.find(x=>x[0]===navTab)[1] : "MORE";
+  const pop=moreOpen
+    ? `<div class="nav-pop" id="navpop">${more.map(x=>`<button class="${navTab===x[0]?"sel":""}" onclick="navTo('${x[0]}')"${navTab===x[0]?' aria-current="page"':""}>${x[1]}</button>`).join("")}</div>`
     : "";
-  return `<nav>${mainBtns}<div class="nav-more"><button class="${moreCls}" onclick="toggleMore()">MORE</button>${pop}</div></nav>`;
+  return `<nav aria-label="Hauptnavigation">${mainBtns}<div class="nav-more"><button class="${moreCls}" onclick="toggleMore()" aria-haspopup="true" aria-expanded="${moreOpen}"${moreOpen?' aria-controls="navpop"':""}>${moreLabel}</button>${pop}</div></nav>`;
 }
 
 function render(){
@@ -1286,7 +1349,8 @@ function render(){
     default:html=todayView();
   }
   // v3.1: fehlgeschlagenes Speichern sichtbar machen
-  const warn=storageFailed?'<div class="storewarn">! SPEICHERN FEHLGESCHLAGEN — bitte über HABITS → DATEN EXPORTIEREN sichern</div>':'';
+  editorOpen=false;
+  const warn=storageFailed?'<div class="storewarn" role="alert">! SPEICHERN FEHLGESCHLAGEN — bitte über HABITS → DATEN EXPORTIEREN sichern</div>':'';
   document.body.innerHTML=warn+html+tabs();
   lastRenderedTab=tab;
   if(keepY!==null){
@@ -1299,8 +1363,12 @@ function render(){
 }
 
 function renderEditor(){
+  // v3.4: bereits getippten Namen behalten, wenn der Editor neu gezeichnet wird
+  // (vorher ging er beim Umschalten der Frequenz verloren).
+  const prevName=editorOpen?document.getElementById("ename"):null;
+  editorOpen=true;
   let h=editId?habits.find(x=>x.id===editId):null;
-  let name=h?h.name:"";
+  let name=prevName?prevName.value:(h?h.name:"");
   let title=editId?"HABIT BEARBEITEN":"NEUER HABIT";
   let delBtn=editId?`<button class="wide danger" onclick="deleteHabit()">HABIT LÖSCHEN</button>`:"";
   let archBtn=editId&&!h.arch?`<button class="wide secondary" onclick="archiveHabit()">ARCHIVIEREN</button>`:"";
@@ -1309,47 +1377,46 @@ function renderEditor(){
   let freqSeg=`
     <div class="label">FREQUENZ</div>
     <div class="seg seg4">
-      <button class="${editFreq.type==="daily"?"sel":""}" onclick="setFreqType('daily')">TÄGLICH</button>
-      <button class="${editFreq.type==="times"?"sel":""}" onclick="setFreqType('times')">FLEXIBEL</button>
-      <button class="${editFreq.type==="days"?"sel":""}" onclick="setFreqType('days')">WOCHENTAGE</button>
-      <button class="${editFreq.type==="limit"?"sel":""}" onclick="setFreqType('limit')">LIMIT</button>
+      ${[["daily","TÄGLICH"],["times","FLEXIBEL"],["days","WOCHENTAGE"],["limit","LIMIT"]].map(([t,l])=>
+        `<button class="${editFreq.type===t?"sel":""}" aria-pressed="${editFreq.type===t}" onclick="setFreqType('${t}')">${l}</button>`).join("")}
     </div>
   `;
 
   let timesCtrl=editFreq.type==="times"?`
     <div class="label">ANZAHL PRO WOCHE</div>
     <div class="counter">
-      <button onclick="changeCount(-1)">−</button>
-      <b>${editFreq.count||3}</b>
-      <button onclick="changeCount(1)">+</button>
+      <button onclick="changeCount(-1)" aria-label="Einmal weniger pro Woche">−</button>
+      <b aria-live="polite">${editFreq.count||3}×</b>
+      <button onclick="changeCount(1)" aria-label="Einmal mehr pro Woche">+</button>
     </div>
   `:"";
 
   let limitCtrl=editFreq.type==="limit"?`
     <div class="label">MAXIMUM PRO TAG</div>
     <div class="counter">
-      <button onclick="changeLimit(-1)">−</button>
-      <b>${editFreq.max??5}×</b>
-      <button onclick="changeLimit(1)">+</button>
+      <button onclick="changeLimit(-1)" aria-label="Maximum verringern">−</button>
+      <b aria-live="polite">${editFreq.max??5}×</b>
+      <button onclick="changeLimit(1)" aria-label="Maximum erhöhen">+</button>
     </div>
-    <div class="hint">LIMIT-HABIT · weniger ist besser. Jeder Tipp auf + zählt eins. Ein Tag gilt als geschafft, solange du auf oder unter dem Maximum bleibst.</div>
+    <div class="hint">Limit-Habit: weniger ist besser. Jeder Tipp auf + zählt eins. Ein Tag gilt als geschafft, solange du auf oder unter dem Maximum bleibst.</div>
   `:"";
 
   let daysCtrl=editFreq.type==="days"?`
     <div class="label">TAGE</div>
     <div class="days">
-      ${[1,2,3,4,5,6,7].map(d=>`<button class="${editDays.includes(d)?"sel":""}" onclick="toggleDay(${d})">${weekdays[d-1]}</button>`).join("")}
+      ${DAY_ORDER.map(d=>`<button class="${editDays.includes(d)?"sel":""}" aria-pressed="${editDays.includes(d)}" onclick="toggleDay(${d})">${weekdays[d-1]}</button>`).join("")}
     </div>
   `:"";
 
+  const zone=editId?`<div class="ezone"><div class="label">${h&&h.arch?"ARCHIV":"ARCHIVIEREN ODER LÖSCHEN"}</div>${archBtn}${unarchBtn}${delBtn}</div>`:"";
   document.body.innerHTML=`
-    <main>
-      ${header(title)}
-      <div class="top"><b>${title}</b><button onclick="cancelEditor()">ABBRECHEN</button></div>
-      <label>NAME<input id="ename" value="${esc(name)}" placeholder="z.B. Lesen, Sport..."></label>
+    <main class="editor">
+      ${header(title,"",`<button class="phead-btn" onclick="cancelEditor()">ABBRECHEN</button>`)}
+      <label class="field"><span class="flabel">NAME</span><input id="ename" class="input" value="${esc(name)}" placeholder="z. B. Lesen, Sport …" autocomplete="off" aria-describedby="enameErr" onkeydown="if(event.key==='Enter'){event.preventDefault();saveHabit()}" oninput="this.removeAttribute('aria-invalid');document.getElementById('enameErr').textContent=''"></label>
+      <div class="ferr" id="enameErr" role="alert"></div>
       ${freqSeg}${timesCtrl}${daysCtrl}${limitCtrl}
-      <button class="wide" onclick="saveHabit()">${editId?"SPEICHERN":"HABIT ERSTELLEN"}</button>
-      ${archBtn}${unarchBtn}${delBtn}
+      <button class="wide primary" style="margin-top:var(--s5)" onclick="saveHabit()">${editId?"SPEICHERN":"HABIT ERSTELLEN"}</button>
+      ${zone}
     </main>
   `;
 }
@@ -1671,6 +1738,7 @@ function backup(){
 }
 
 function editor(id){
+  editorOpen=false;                // v3.4: frisch öffnen = Name aus dem Habit, nicht aus dem vorigen Feld
   editId=id||null;
   if(editId){
     let h=habits.find(x=>x.id===editId);
@@ -1707,7 +1775,12 @@ function toggleDay(d){
 function cancelEditor(){render();}
 function saveHabit(){
   let name=$("#ename").value.trim();
-  if(!name){alert("Name erforderlich.");return;}
+  if(!name){                                         // v3.4: Hinweis am Feld statt alert()
+    const inp=$("#ename"),er=$("#enameErr");
+    if(er)er.textContent="Bitte einen Namen eingeben.";
+    if(inp){inp.setAttribute("aria-invalid","true");inp.focus();}
+    return;
+  }
   let freq=cloneFreq(editFreq);
   if(freq.type==="days")freq.days=[...editDays];
   if(editId){
@@ -1757,6 +1830,15 @@ function openHistoryWeek(s){historyWeekDate=parse(s);tab="historyWeek";render()}
 
 function openHabitHistory(id){historyHabitId=id;tab="habitHistory";render();}
 function toggleMore(){window._moreOpen=!window._moreOpen;render()}
+/* v3.4: jeder Reiter-Tipp schließt das MORE-Menü — auch auf den schon aktiven Reiter */
+function navTo(t){window._moreOpen=false;if(tab===t)render();else setTab(t);}
+/* Tipp außerhalb der Navigation schließt ein offenes MORE-Menü (und löst sonst nichts aus) */
+document.addEventListener("click",e=>{
+  if(!window._moreOpen)return;
+  const t=e.target;
+  if(t&&t.closest&&t.closest("nav"))return;
+  window._moreOpen=false;e.preventDefault();e.stopPropagation();render();
+},true);
 
 document.addEventListener("touchstart",e=>{
   if(e.touches.length!==1)return;
@@ -1774,6 +1856,7 @@ document.addEventListener("touchend",e=>{
   const dt=Date.now()-touchStartTime;
   touchStartX=touchStartY=0;
   if(touchBlocked){touchBlocked=false;return;}   // v2.2: started on a counter card
+  if(editorOpen)return;                          // v3.4: kein Reiterwechsel aus dem Editor
   if(dt>SWIPE_MAX_TIME)return;
   if(Math.abs(dy)>SWIPE_MAX_Y)return;
   if(Math.abs(dx)<SWIPE_THRESHOLD)return;
@@ -1813,6 +1896,15 @@ function animateSwipe(dir,cb){
 
 /* ── Keyboard shortcuts ── */
 document.addEventListener("keydown",e=>{
+  // v3.4: Esc schließt Menü bzw. Editor
+  if(e.key==="Escape"){
+    if(window._moreOpen){window._moreOpen=false;render();return}
+    if(editorOpen){cancelEditor();return}
+  }
+  // v3.4: Pfeiltasten in Eingabefeldern und im Editor nicht abfangen
+  const tg=e.target;
+  if(editorOpen)return;
+  if(tg&&(tg.tagName==="INPUT"||tg.tagName==="TEXTAREA"||tg.tagName==="SELECT"||tg.isContentEditable))return;
   const idx=TAB_ORDER.indexOf(tab);
   if(e.key==="ArrowRight" && idx<TAB_ORDER.length-1){e.preventDefault();setTab(TAB_ORDER[idx+1]);}
   else if(e.key==="ArrowLeft" && idx>0){e.preventDefault();setTab(TAB_ORDER[idx-1]);}
@@ -1827,7 +1919,7 @@ function setTab(t){
   tab=t;
   if(t==="week")viewedWeek=mon(today());
   if(t==="month")month=new Date(today().getFullYear(),today().getMonth(),1);
-  window._moreOpen=MORE_TABS.includes(t);
+  window._moreOpen=false;                        // v3.4: Menü schließt beim Reiterwechsel
   render();
 }
 
