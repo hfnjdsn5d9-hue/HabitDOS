@@ -7,10 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="HabitDOS">
 <meta name="theme-color" content="#0a0a0a">
-<title>HabitDOS HTML v3.4</title>
+<title>HabitDOS HTML v3.7</title>
 <style>
 /* ══════════════════════════════════════════════════════════════════
-   HABITDOS v3.4 — STILE
+   HABITDOS v3.7 — STILE
    Aufbau: 1 Tokens · 2 Basis · 3 Seitenkopf & Zusammenfassung
            4 Bausteine · 5 TODAY · 6 WEEK/MONTH/HISTORY/STATS
            7 Editor · 8 TODO-Matrix · 9 Navigation · 10 Overlays
@@ -82,8 +82,8 @@ main{max-width:640px;margin:0 auto;padding:0 var(--pad) var(--s5)}
 .sum.box.done{border-color:var(--acc-2);border-left-color:var(--acc)}
 .sum-l{display:flex;align-items:baseline;gap:var(--s3);min-width:0}
 .hero-pct{font-size:var(--t-xl);font-weight:800;line-height:1;letter-spacing:-.02em;color:var(--fg);min-width:3.4ch}
-.hero-bar{font-size:var(--t-sm);letter-spacing:1px;line-height:1;color:var(--acc);white-space:nowrap}
-.sum-r{font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.06em;text-align:right}
+.hero-bar{font-size:var(--t-sm);letter-spacing:1px;line-height:1;color:var(--acc);white-space:nowrap;min-width:0;overflow:hidden}
+.sum-r{font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.06em;text-align:right;white-space:nowrap}
 .sum.done .hero-pct{color:var(--acc);text-shadow:0 0 8px var(--acc-glow)}
 .sum.done .sum-r{color:var(--acc)}
 
@@ -326,12 +326,58 @@ button.tlrow:active{background:var(--surface-2)}
 .tpick button.sel::before{content:"■ "}
 .tpick .tpdel{border-color:var(--bad-line);color:var(--bad);margin-left:auto}
 
+/* ── 8b. KCAL ── */
+.sum.over .hero-bar,.sum.over .sum-r{color:var(--warn)}
+.kqbtn{font-size:var(--t-xs)!important;letter-spacing:.04em;width:64px!important}
+.kpanel{background:var(--surface);border:1px solid var(--acc-2);padding:var(--s4);margin:var(--s2) 0 var(--s3)}
+.kpanel .row b{white-space:normal}
+.kpanel .field{margin-top:var(--s1)}
+.kpanel .hint{margin-top:var(--s2)}
+.kamt{display:flex;align-items:center;gap:var(--s2);margin-top:var(--s3)}
+.kamt .input{flex:1;font-size:20px;font-weight:800}
+.kunit{min-width:3ch;color:var(--fg-2);font-weight:800}
+.kchips{display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s2)}
+.kchips button{min-height:40px;padding:0 var(--s3);background:var(--bg);border:1px solid var(--line-2);color:var(--fg);font-size:var(--t-xs)}
+.kchips button:active{background:var(--surface-2)}
+.kprev{margin-top:var(--s3);font-size:var(--t-md);font-weight:800;color:var(--acc)}
+.kbtns{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+.kbtns .danger{grid-column:1/-1}
+.kown{color:var(--warn)}
+.kbasis{font-size:var(--t-xs);color:var(--fg-3);margin-top:var(--s1);letter-spacing:.02em}
+.kprevm{font-size:var(--t-sm);color:var(--fg-2);margin-top:2px}
+.kmacin{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2)}
+.kmacin label{display:block;min-width:0}
+.kmacin .flabel{margin:0 0 var(--s1)}
+.kmacin .input{padding:var(--s3) var(--s2);min-height:48px}
+.kmac{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);margin-top:var(--s2)}
+.kmac>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.kml{font-size:var(--t-xs);color:var(--fg-3);letter-spacing:.1em;font-weight:800}
+.kmv{font-size:var(--t-md);font-weight:800;white-space:nowrap}
+.kmv small{font-size:var(--t-xs);font-weight:400;color:var(--fg-3)}
+.kpctsum{font-size:var(--t-xs);color:var(--fg-2);margin-top:var(--s2);letter-spacing:.02em}
+.kpctsum.bad{color:var(--warn)}
+.kmb{font-size:10px;letter-spacing:1px;color:var(--acc-2);white-space:nowrap;overflow:hidden;line-height:1}
+.kkcal{flex:0 0 auto;min-width:4.5ch;text-align:right;font-weight:800;font-size:var(--t-sm)}
+.kday{display:grid;grid-template-columns:56px 1fr 56px;gap:var(--s2);align-items:center;width:100%;min-height:40px;padding:0;
+  background:none;border:0;border-bottom:1px solid var(--line);color:var(--fg);font-size:var(--t-sm);text-align:left}
+.kday:last-child{border:0}
+.kday .wlabel{color:var(--fg-3);letter-spacing:.04em}
+.kday .wbar{letter-spacing:1px;color:var(--acc-2);white-space:nowrap;overflow:hidden}
+.kday .wbar.lv0{color:var(--fg-off)}
+.kday .wpct{text-align:right;font-weight:800}
+.kday.cur .wlabel,.kday.cur .wbar{color:var(--acc)}
+.kday.over .wbar{color:var(--warn)}
+.kday:active{background:var(--surface-2)}
+.kcat{font-size:var(--t-sm);color:var(--fg-2)}
+.kmsg{font-size:var(--t-xs);color:var(--acc);margin-top:var(--s2)}
+@media (hover:hover){.kchips button:hover{border-color:var(--fg-3)}.kday:hover{background:var(--surface)}}
+
 /* ── 9. Navigation ── */
 nav{position:fixed;z-index:30;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line-2);
-  display:grid;grid-template-columns:repeat(4,1fr) 1.35fr;
+  display:grid;grid-template-columns:repeat(5,1fr) 1.55fr;
   padding:6px max(4px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left))}
 nav button{min-height:48px;background:none;border:0;border-top:2px solid transparent;color:var(--fg-3);padding:0 2px;
-  font-size:var(--t-sm);font-weight:800;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  font-size:12px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 nav button.sel{color:var(--acc);background:var(--surface);border-top-color:var(--acc)}
 nav button.cur{color:var(--acc-2);background:var(--surface);border-top-color:var(--acc-2)}
 nav button.sel::before,nav button.cur::before{content:"> "}
@@ -348,7 +394,9 @@ nav button:active{background:var(--surface-2);color:var(--fg)}
 .nav-pop button.sel{background:var(--surface-2)}
 .nav-pop button::after{content:none}
 /* sehr schmale Displays (iPhone SE 1. Gen.): Reiternamen passen ohne Abschneiden */
-@media (max-width:359px){nav button{font-size:var(--t-xs);letter-spacing:0}}
+@media (max-width:389px){nav button{font-size:var(--t-xs);letter-spacing:0}}
+/* sehr schmal: das Präfix "> " entfällt, Hintergrund und Linie markieren den Reiter weiterhin */
+@media (max-width:359px){nav>button.sel::before,nav>button.cur::before,.nav-more>button.sel::before{content:none}}
 
 /* ── 10. Overlays & Meldungen ── */
 .storewarn{position:fixed;z-index:40;left:0;right:0;bottom:var(--nav-h);background:#3a1212;color:#ffc4c4;
@@ -409,12 +457,12 @@ main.swipe-right{transform:translateX(24px);opacity:.6}
    ══════════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════
-   HABITDOS v3.4 — Terminal Habit Tracker
+   HABITDOS v3.7 — Terminal Habit Tracker
    ═══════════════════════════════════════════════════════════════ */
 
 const HKEY="habitdos.v1_5.habits",RKEY="habitdos.v1_5.records",TKEY="habitdos.v1_5.todos",MEM={};
 const SCROLLKEY="habitdos.v1_7.scroll";
-const APP_VERSION="3.4";
+const APP_VERSION="3.7";
 /* ── v3.1: Serien, die den Habit-Typ respektieren ──
    Täglich / feste Tage : zählt fällige Tage; nicht fällige Tage werden
                           übersprungen, ein heute noch offener Tag bricht nicht.
@@ -431,7 +479,7 @@ const STREAK_GUARD=3650;
    today() und logicalDay() und sind dadurch automatisch richtig. */
 const DAY_ROLLOVER_HOUR=3;
 const NO_RECS=[];
-const TAB_ORDER = ["today","todo","week","month","history","habits","stats"];
+const TAB_ORDER = ["today","todo","kcal","week","month","history","habits","stats"];   // v3.5: KCAL
 const MORE_TABS = ["history","habits","stats"];
 /* v2.1 (A2/A3): sanitize & validate an imported backup before it touches app state. */
 const VALID_TYPES=["daily","times","days","limit"];
@@ -1254,7 +1302,7 @@ function habitsView(){
     `<button class="wide primary" onclick="editor()">+ HABIT HINZUFÜGEN</button>`+
     archBlock+
     `<div class="section-title">AUSWERTUNG</div><button class="wide secondary" onclick="showHabitStats()">STATISTIK ÖFFNEN</button>`+
-    `<div class="section-title">DATEN</div><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label>`+
+    `<div class="section-title">DATEN</div><div class="hint" style="margin:0 0 var(--s1)">Das Backup enthält Habits, Aufgaben, kcal-Einträge, eigene Lebensmittel und den Katalog.</div><button class="wide secondary" onclick="backup()">DATEN EXPORTIEREN</button><label class="wide secondary file">DATEN IMPORTIEREN<input type="file" accept="application/json,.json" onchange="restore(event)"></label>`+
     `<div class="section-title">GEFAHRENZONE</div><button class="wide danger" onclick="resetData()">ALLE DATEN ZURÜCKSETZEN</button>`+
     `<div class="hint">HABITDOS HTML v${APP_VERSION} · TAGESWECHSEL ${String(DAY_ROLLOVER_HOUR).padStart(2,"0")}:00 · ${offlineStatusText()}</div></main>`;
 }
@@ -1305,7 +1353,7 @@ function todoView(){
   `</main>`;
 }
 function tabs(){
-  const main=[["today","TODAY"],["todo","TODO"],["week","WEEK"],["month","MONTH"]];
+  const main=[["today","TODAY"],["todo","TODO"],["kcal","KCAL"],["week","WEEK"],["month","MONTH"]];
   const more=[["history","HISTORY"],["habits","HABITS"],["stats","STATS"]];
   const navTab=PARENT_TAB[tab]||tab;              // v3.4: Unterseiten zählen zum Eltern-Reiter
   const moreSel=MORE_TABS.includes(navTab);       // ein Unterpunkt ist die aktive Seite
@@ -1338,6 +1386,7 @@ function render(){
   switch(tab){
     case "today":html=todayView();break;
     case "todo":html=todoView();break;
+    case "kcal":html=kcalView();break;
     case "week":html=weekView();break;
     case "month":html=monthView();break;
     case "history":html=historyView();break;
@@ -1590,8 +1639,9 @@ function quickAddTodo(){
 function quickAddKey(e){ if(e.key==="Enter"){e.preventDefault();quickAddTodo();} }
 
 function resetData(){
-  if(!confirm("Alle HabitDOS-Daten auf diesem Gerät löschen?"))return;
+  if(!confirm("Alle HabitDOS-Daten auf diesem Gerät löschen?\n\nDer importierte Lebensmittel-Katalog bleibt erhalten."))return;
   habits=[];records=[];todos=[];
+  kcal=normalizeKcal(null);kcalPanel=null;saveKcal();      // v3.5: kcal-Einträge, eigene Lebensmittel, Ziel
   putStore(SCROLLKEY,{});
   save();render();
 }
@@ -1676,10 +1726,15 @@ function restore(e){
       const clean=sanitizeImport(x);
       if(!clean.habits.length && (x.habits.length>0))throw 0;   // structurally unusable
       habits=clean.habits;records=clean.records;todos=clean.todos;
+      // v3.5: kcal-Teil nur übernehmen, wenn das Backup ihn enthält —
+      // ältere Backups lassen die kcal-Daten auf dem Gerät unangetastet.
+      let kmsg="";
+      if(x.kcal&&typeof x.kcal==="object"){kcal=normalizeKcal(x.kcal);kcalPanel=null;saveKcal();kmsg=` kcal: ${kcal.log.length} Einträge, ${kcal.foods.length} eigene Lebensmittel.`}
+      if(x.kcalCatalog){const c=normalizeCat(x.kcalCatalog);if(c){if(putStore(KCKEY,c)){setKcalCat(c);kmsg+=` Katalog: ${c.items.length} Einträge.`}else{storageFailed=false;kmsg+=" Katalog passte nicht in den Speicher."}}}
       save();render();
-      alert(clean.dropped>0
+      alert((clean.dropped>0
         ? `HabitDOS-Daten importiert. ${clean.dropped} ungültige Einträge übersprungen.`
-        : "HabitDOS-Daten wurden importiert.");
+        : "HabitDOS-Daten wurden importiert.")+kmsg);
     }catch(err){alert("Ungültige HabitDOS-Backup-Datei.");}
   };
   r.readAsText(file);
@@ -1728,9 +1783,14 @@ function delTodo(id){
   todos=todos.filter(x=>x.id!==id);save();render();
 }
 
+function backupData(){
+  // v3.5: enthält auch kcal (Einträge, eigene Lebensmittel, Ziel) und den importierten Katalog
+  return {habits,records,todos,kcal,kcalCatalog:kcalCat||null,version:APP_VERSION,exported:k(today())};
+}
 function backup(){
-  let data={habits,records,todos,version:APP_VERSION,exported:k(today())};
-  let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  let data=backupData();
+  // mit Katalog ohne Einrückung, sonst wird die Datei unnötig groß
+  let blob=new Blob([kcalCat?JSON.stringify(data):JSON.stringify(data,null,2)],{type:"application/json"});
   let a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
   a.download=`habitdos-backup-${k(today())}.json`;
@@ -1900,6 +1960,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
     if(window._moreOpen){window._moreOpen=false;render();return}
     if(editorOpen){cancelEditor();return}
+    if(tab==="kcal"&&kcalPanel){kcalClosePanel();return}
   }
   // v3.4: Pfeiltasten in Eingabefeldern und im Editor nicht abfangen
   const tg=e.target;
@@ -1919,6 +1980,7 @@ function setTab(t){
   tab=t;
   if(t==="week")viewedWeek=mon(today());
   if(t==="month")month=new Date(today().getFullYear(),today().getMonth(),1);
+  if(t==="kcal"){kcalDay=null;kcalPanel=null;kcalCatMsg=""}
   window._moreOpen=false;                        // v3.4: Menü schließt beim Reiterwechsel
   render();
 }
@@ -2000,6 +2062,590 @@ function initServiceWorker(){
     })
     .catch(()=>{ swState="failed"; });
 }
+/* ══════════════════════════════════════════════════════════════════
+   10b. KCAL — Kalorien-Tagebuch (v3.5)
+   Eigenständiger Bereich: beeinflusst weder Tagesquote noch Serien.
+   KKEY  : {goal, foods, log}  eigene Lebensmittel, Einträge, Tagesziel
+   KCKEY : {source, imported, items:[[name, kcal/100 g], …]}  importierter Katalog
+   Jeder Eintrag speichert seine kcal als Momentaufnahme: Ändern oder Löschen
+   eines Lebensmittels bzw. Entfernen des Katalogs verändert die Historie nicht.
+   Der Tag wechselt wie überall um 03:00 (today()).
+   v3.6 — Makros (Eiweiß, Fett, Kohlenhydrate), überall optional:
+   m = [eiweiß, fett, kh] in Gramm, bezogen auf dieselbe Basis wie die kcal
+   (pro 100 g, pro Stück oder — bei Direkteinträgen — absolut). Einzelwerte
+   dürfen null sein (= unbekannt). Ältere Daten ohne m bleiben gültig.
+   v3.7 — Makroziele wahlweise als Verteilung in % der kcal (mmode "pct", mpct)
+   oder fest in Gramm (mgoal). Im %-Modus werden die Gramm nie gespeichert,
+   sondern immer aus kcal-Ziel × Anteil berechnet — sie folgen also automatisch.
+   ══════════════════════════════════════════════════════════════════ */
+const KKEY="habitdos.v3_5.kcal", KCKEY="habitdos.v3_5.kcalcat";
+const KCAL_MAX_CAT=50000, KCAL_MAX_RESULTS=40;
+const kSafeId=s=>String(s==null?"":s).replace(/[^A-Za-z0-9._-]/g,"");
+const kNum=v=>{const n=parseFloat(String(v==null?"":v).trim().replace(/\s/g,"").replace(",","."));return isFinite(n)?n:NaN};
+const kFmt=n=>Math.round(n).toLocaleString("de-DE");
+const kFmtAmt=n=>(Math.round(n*10)/10).toLocaleString("de-DE");
+const MAC_S=["E","F","KH"], MAC_L=["EIWEISS","FETT","KH"], MAC_KCAL=[4,9,4];
+const kFmtG=n=>(n>=10?Math.round(n):Math.round(n*10)/10).toLocaleString("de-DE");
+/* Makro-Array normalisieren: [e,f,kh] mit null für unbekannt; null, wenn alles fehlt */
+function kMac(v,max){
+  if(!Array.isArray(v))return null;
+  const m=[0,1,2].map(i=>{const n=kNum(v[i]);return n>=0&&n<=max?Math.round(n*10)/10:null});
+  return m.some(x=>x!=null)?m:null;
+}
+const kMacScale=(m,unit,amt)=>m?m.map(v=>v==null?null:(unit==="g"?v*amt/100:unit==="stk"?v*amt:v)):null;
+const kMacTxt=m=>m?m.map((v,i)=>`${MAC_S[i]} ${v==null?"?":kFmtG(v)}`).join(" · ")+" g":"";
+const kFold=s=>String(s).toLowerCase().replace(/ß/g,"ss").normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+
+function normalizeKcal(x){
+  const o={goal:null,foods:[],log:[]};
+  if(!x||typeof x!=="object")return o;
+  const g=kNum(x.goal); if(g>0)o.goal=Math.min(20000,Math.round(g));
+  const mg=kMac(x.mgoal,2000); if(mg)o.mgoal=mg.map(v=>v==null||v<=0?null:Math.round(v));
+  if(o.mgoal&&!o.mgoal.some(v=>v!=null))delete o.mgoal;
+  const mp=kMac(x.mpct,100); if(mp&&mp.every(v=>v!=null))o.mpct=mp;
+  if(x.mmode==="pct"||x.mmode==="g")o.mmode=x.mmode;
+  const fid=new Set();
+  (Array.isArray(x.foods)?x.foods:[]).forEach(f=>{
+    if(!f||typeof f!=="object")return;
+    const n=String(f.n==null?"":f.n).trim().slice(0,120), per=kNum(f.per), unit=f.unit==="stk"?"stk":"g";
+    if(!n||!(per>=0)||per>20000)return;
+    let id=kSafeId(f.id); if(!id||fid.has(id))id=uid(); fid.add(id);
+    const food={id,n,per:Math.round(per*10)/10,unit};
+    const pg=kNum(f.pg); if(unit==="g"&&pg>0&&pg<=5000)food.pg=Math.round(pg);
+    const m=kMac(f.m,unit==="g"?100:2000); if(m)food.m=m;
+    o.foods.push(food);
+  });
+  const eid=new Set();
+  (Array.isArray(x.log)?x.log:[]).forEach(e=>{
+    if(!e||typeof e!=="object"||!isValidDateKey(e.d))return;
+    const kc=kNum(e.kcal); if(!(kc>=0)||kc>50000)return;
+    const unit=["g","stk","kcal"].includes(e.unit)?e.unit:"kcal";
+    let id=kSafeId(e.id); if(!id||eid.has(id))id=uid(); eid.add(id);
+    const amt=kNum(e.amt), per=kNum(e.per);
+    const out={id,d:String(e.d),n:String(e.n==null?"Eintrag":e.n).trim().slice(0,120)||"Eintrag",unit,
+      amt:amt>0?amt:(unit==="kcal"?Math.round(kc):0),per:unit==="kcal"?null:(per>=0?per:null),kcal:Math.round(kc)};
+    if(typeof e.t==="string"&&!isNaN(Date.parse(e.t)))out.t=e.t;
+    if(e.src==="c"||e.src==="f")out.src=e.src;
+    const m=kMac(e.m,unit==="g"?100:5000); if(m)out.m=m;
+    o.log.push(out);
+  });
+  return o;
+}
+function normalizeCat(x){
+  if(!x||typeof x!=="object"||!Array.isArray(x.items))return null;
+  const items=[];
+  for(const it of x.items){
+    if(items.length>=KCAL_MAX_CAT)break;
+    if(!Array.isArray(it))continue;
+    const n=String(it[0]==null?"":it[0]).trim().slice(0,160), v=kNum(it[1]);
+    if(!(n&&v>=0&&v<=1000))continue;
+    const m=kMac(it.slice(2,5),100);
+    items.push(m?[n,Math.round(v*10)/10,m[0],m[1],m[2]]:[n,Math.round(v*10)/10]);
+  }
+  if(!items.length)return null;
+  return {source:String(x.source||"Katalog").slice(0,80),
+          imported:(typeof x.imported==="string"&&!isNaN(Date.parse(x.imported)))?x.imported:new Date().toISOString(),items};
+}
+
+let kcal=normalizeKcal(getStore(KKEY,null));
+let kcalCat=normalizeCat(getStore(KCKEY,null));
+let _catFold=null;            // gefaltete Katalognamen für die Suche, bei Bedarf gebaut
+let kcalDay=null;             // null = folgt "heute" (auch über 03:00 hinweg)
+let kcalQuery="";             // Suchtext bleibt beim Neuzeichnen erhalten
+let kcalPanel=null;           // offenes Mengen- bzw. Formularfeld
+let kcalCatMsg="";            // Rückmeldung nach Katalog-Import
+
+function saveKcal(){return putStore(KKEY,kcal)}
+function setKcalCat(c){kcalCat=c;_catFold=null}
+function kcalDayKey(){return kcalDay?k(kcalDay):k(today())}
+function kcalDayTotal(dk){let s=0;for(const e of kcal.log)if(e.d===dk)s+=e.kcal;return s}
+/* v3.7: aktuelle Makroziele in Gramm — im %-Modus aus kcal-Ziel berechnet */
+function kMacMode(){return kcal.mmode||(kcal.mgoal?"g":"pct")}
+const kPctToG=(goal,pct)=>pct.map((v,i)=>Math.round(goal*v/100/MAC_KCAL[i]));
+function kMacGoals(){
+  if(kMacMode()==="pct")return (kcal.goal&&kcal.mpct)?kPctToG(kcal.goal,kcal.mpct):null;
+  return kcal.mgoal||null;
+}
+/* Gramm → Anteile, die zusammen genau 100 ergeben */
+function kGToPct(g){
+  const kc=g.map((v,i)=>(v||0)*MAC_KCAL[i]), tot=kc.reduce((a,b)=>a+b,0);
+  if(!tot)return null;
+  const pc=kc.map(v=>Math.round(v/tot*100));
+  pc[2]+=100-pc.reduce((a,b)=>a+b,0);
+  return pc;
+}
+/* Makro-Summen eines Tages; miss = Einträge ohne vollständige Makros */
+function kcalDayMacros(entries){
+  const sum=[0,0,0];let miss=0;
+  for(const e of entries){
+    const m=kMacScale(e.m,e.unit,e.amt);
+    if(!m||m.some(v=>v==null))miss++;
+    if(m)m.forEach((v,i)=>{if(v!=null)sum[i]+=v});
+  }
+  return {sum,miss};
+}
+function kPerTxt(f){return f.unit==="stk"?`${kFmtAmt(f.per)} kcal/Stk`:`${kFmtAmt(f.per)} kcal/100 g`}
+function kAmtTxt(e){return e.unit==="g"?`${kFmtAmt(e.amt)} g`:e.unit==="stk"?`${kFmtAmt(e.amt)} Stk`:"direkt"}
+function kCalc(per,unit,amt){return Math.round(unit==="g"?per*amt/100:per*amt)}
+
+/* ── Suche: alle Wörter müssen vorkommen; eigene Lebensmittel zuerst ── */
+function kcalSearch(q){
+  const toks=kFold(q).split(/\s+/).filter(Boolean);
+  if(!toks.length)return[];
+  const score=(f,raw)=>{let s=raw.length;if(f.startsWith(toks[0]))s-=1000;else if(f.includes(" "+toks[0]))s-=500;return s};
+  const own=[];
+  kcal.foods.forEach(f=>{const ff=kFold(f.n);if(toks.every(t=>ff.includes(t)))own.push({sc:score(ff,f.n),id:"f:"+f.id,n:f.n,per:f.per,unit:f.unit,m:f.m,own:true})});
+  own.sort((a,b)=>a.sc-b.sc);
+  const cat=[];
+  if(kcalCat){
+    if(!_catFold)_catFold=kcalCat.items.map(it=>kFold(it[0]));
+    for(let i=0;i<_catFold.length;i++){
+      const ff=_catFold[i];
+      if(toks.every(t=>ff.includes(t)))cat.push({sc:score(ff,kcalCat.items[i][0]),id:"c:"+i,n:kcalCat.items[i][0],per:kcalCat.items[i][1],unit:"g",m:kMac(kcalCat.items[i].slice(2,5),100)});
+    }
+    cat.sort((a,b)=>a.sc-b.sc);
+  }
+  return own.concat(cat).slice(0,KCAL_MAX_RESULTS);
+}
+/* Zuletzt gegessen: jüngste unterschiedliche Lebensmittel (ohne Direkteinträge) */
+function kcalRecents(max=8){
+  const seen=new Set(),out=[];
+  const sorted=kcal.log.filter(e=>e.unit!=="kcal"&&e.per!=null).sort((a,b)=>((b.t||b.d)>(a.t||a.d)?1:-1));
+  for(const e of sorted){
+    const key=e.n+"|"+e.unit+"|"+e.per;
+    if(seen.has(key))continue;
+    seen.add(key);out.push(e);
+    if(out.length>=max)break;
+  }
+  return out;
+}
+
+/* ── Anzeige ── */
+function kcalResultRow(r){
+  return `<button class="tlrow" data-act="kcalPick" data-id="${esc(r.id)}">`+
+    `<span class="tlname">${r.own?'<span class="kown" aria-label="eigenes Lebensmittel">★ </span>':""}${esc(r.n)}</span>`+
+    `<span class="tlmeta">${kPerTxt(r)}</span></button>`;
+}
+function kcalListHtml(){
+  if(kcalQuery.trim()){
+    const res=kcalSearch(kcalQuery);
+    if(!res.length)return `<div class="hint">Nichts gefunden für „${esc(kcalQuery.trim())}“.</div>`+
+      `<button class="wide secondary" onclick="kcalOpenFood(null,true)">„${esc(kcalQuery.trim().slice(0,40))}“ ALS EIGENES LEBENSMITTEL ANLEGEN</button>`;
+    return tlSection(`TREFFER · ${res.length}${res.length>=KCAL_MAX_RESULTS?"+":""}`)+res.map(kcalResultRow).join("");
+  }
+  const rec=kcalRecents();
+  if(rec.length)return tlSection("ZULETZT")+rec.map(e=>
+    `<button class="tlrow" data-act="kcalPick" data-id="e:${esc(e.id)}"><span class="tlname">${esc(e.n)}</span><span class="tlmeta">${kAmtTxt(e)} · ${kFmt(e.kcal)} kcal</span></button>`).join("");
+  return `<div class="hint">${kcalCat?"Oben suchen, um etwas einzutragen.":"Noch kein Katalog importiert. Du kannst trotzdem sofort eigene Lebensmittel anlegen oder kcal direkt eintragen. Den Katalog importierst du unten unter EINSTELLUNGEN & KATALOG."}</div>`;
+}
+/* drei Makro-Eingaben nebeneinander; ids: prefix+"p|f|c" */
+function kMacInputs(prefix,vals,unitTxt,oninput=""){
+  return `<div class="kmacin">`+["p","f","c"].map((s,i)=>
+    `<label><span class="flabel">${MAC_L[i]} ${unitTxt}</span><input id="${prefix}${s}" class="input" type="text" inputmode="decimal" autocomplete="off" value="${vals&&vals[i]!=null?kFmtAmt(vals[i]):""}"${oninput?` oninput="${oninput}"`:""}></label>`).join("")+`</div>`;
+}
+const kReadMac=(prefix,max)=>kMac(["p","f","c"].map(s=>{const el=document.getElementById(prefix+s);return el&&el.value.trim()!==""?el.value:null}),max);
+function kcalPanelHtml(){
+  const p=kcalPanel;
+  const err=`<div class="ferr" id="kerr" role="alert"></div>`;
+  if(p.kind==="amt"){
+    const f=p.food, isG=f.unit==="g";
+    const chips=(isG?[50,100,150,200,250]:[0.5,1,2,3]).map(v=>`<button onclick="kcalSetAmt(${v})">${kFmtAmt(v)}${isG?" g":""}</button>`).join("")+
+      (isG&&f.pg?`<button onclick="kcalSetAmt(${f.pg})">1 PORTION · ${f.pg} g</button>`:"");
+    return `<div class="kpanel noswipe" role="group" aria-label="Menge eintragen">`+
+      `<div class="row"><b>${esc(f.n)}</b><span class="tlmeta">${kPerTxt(f)}</span></div>`+
+      `<div class="kbasis">${f.m?`${isG?"pro 100 g":"pro Stück"}: ${kMacTxt(f.m)}`:"Keine Makroangaben"}</div>`+
+      `<div class="kamt"><input id="kamt" class="input" type="text" inputmode="decimal" autocomplete="off" value="${kFmtAmt(p.amt)}" aria-label="Menge in ${isG?"Gramm":"Stück"}" oninput="kcalPreview()" onkeydown="if(event.key==='Enter'){event.preventDefault();kcalCommit()}"><span class="kunit">${isG?"g":"Stk"}</span></div>`+
+      `<div class="kchips">${chips}</div>`+
+      `<div class="kprev" id="kprev" aria-live="polite">= ${kFmt(kCalc(f.per,f.unit,p.amt))} kcal</div>`+
+      (f.m?`<div class="kprevm" id="kprevm">${kMacTxt(kMacScale(f.m,f.unit,p.amt))}</div>`:"")+err+
+      `<div class="kbtns"><button class="wide primary" onclick="kcalCommit()">${p.editId?"SPEICHERN":"EINTRAGEN"}</button>`+
+      `<button class="wide secondary" onclick="kcalClosePanel()">ABBRECHEN</button>`+
+      (p.editId?`<button class="wide danger" onclick="kcalDeleteEntry()">EINTRAG LÖSCHEN</button>`:"")+`</div></div>`;
+  }
+  if(p.kind==="quick"){
+    return `<div class="kpanel noswipe" role="group" aria-label="kcal direkt eintragen">`+
+      `<div class="row"><b>KCAL DIREKT EINTRAGEN</b></div>`+
+      `<label class="field"><span class="flabel">BEZEICHNUNG (OPTIONAL)</span><input id="kqn" class="input" autocomplete="off" value="${esc(p.n||"")}" placeholder="z. B. Mittagessen Mensa"></label>`+
+      `<label class="field"><span class="flabel">KCAL</span><input id="kqk" class="input" type="text" inputmode="numeric" autocomplete="off" value="${p.kcal!=null?p.kcal:""}" onkeydown="if(event.key==='Enter'){event.preventDefault();kcalCommitQuick()}"></label>`+
+      `<div class="label">MAKROS IN G (OPTIONAL)</div>${kMacInputs("kq",p.m,"")}${err}`+
+      `<div class="kbtns"><button class="wide primary" onclick="kcalCommitQuick()">${p.editId?"SPEICHERN":"EINTRAGEN"}</button>`+
+      `<button class="wide secondary" onclick="kcalClosePanel()">ABBRECHEN</button>`+
+      (p.editId?`<button class="wide danger" onclick="kcalDeleteEntry()">EINTRAG LÖSCHEN</button>`:"")+`</div></div>`;
+  }
+  // kind==="food": eigenes Lebensmittel anlegen/bearbeiten
+  const isG=p.unit!=="stk";
+  return `<div class="kpanel noswipe" role="group" aria-label="Eigenes Lebensmittel">`+
+    `<div class="row"><b>${p.id?"LEBENSMITTEL BEARBEITEN":"EIGENES LEBENSMITTEL"}</b></div>`+
+    `<label class="field"><span class="flabel">NAME</span><input id="kfn" class="input" autocomplete="off" value="${esc(p.n||"")}" placeholder="z. B. Snickers"></label>`+
+    `<div class="label">ANGABE</div><div class="seg">`+
+      `<button class="${isG?"sel":""}" aria-pressed="${isG}" onclick="kcalFoodUnit('g')">PRO 100 G</button>`+
+      `<button class="${!isG?"sel":""}" aria-pressed="${!isG}" onclick="kcalFoodUnit('stk')">PRO STÜCK</button></div>`+
+    `<label class="field"><span class="flabel">KCAL ${isG?"PRO 100 G":"PRO STÜCK"}</span><input id="kfp" class="input" type="text" inputmode="decimal" autocomplete="off" value="${p.per!=null?kFmtAmt(p.per):""}" placeholder="leer = aus Makros berechnen"></label>`+
+    `<div class="label">MAKROS IN G ${isG?"PRO 100 G":"PRO STÜCK"} (OPTIONAL)</div>${kMacInputs("km",p.m,"")}`+
+    (isG?`<label class="field"><span class="flabel">PORTION IN G (OPTIONAL)</span><input id="kfg" class="input" type="text" inputmode="numeric" autocomplete="off" value="${p.pg||""}" placeholder="z. B. 50 für einen Riegel"></label>`:"")+err+
+    `<div class="kbtns"><button class="wide primary" onclick="kcalSaveFood()">SPEICHERN</button>`+
+    `<button class="wide secondary" onclick="kcalClosePanel()">ABBRECHEN</button>`+
+    (p.id?`<button class="wide danger" onclick="kcalDeleteFood()">LEBENSMITTEL LÖSCHEN</button>`:"")+`</div>`+
+    `<div class="hint">Werte stehen auf der Packung unter „Nährwerte“: Eiweiß, Fett, Kohlenhydrate. Bleibt kcal leer, wird es aus den Makros berechnet (4 / 9 / 4 kcal pro g). Bereits eingetragene Mahlzeiten ändern sich durch Bearbeiten nicht.</div></div>`;
+}
+function kcalView(){
+  const dk=kcalDayKey(), tdk=k(today()), isToday=dk===tdk, dDate=parse(dk);
+  const entries=kcal.log.filter(e=>e.d===dk).sort((a,b)=>((a.t||"")<(b.t||"")?-1:1));
+  const tot=entries.reduce((s,e)=>s+e.kcal,0), g=kcal.goal, over=g&&tot>g;
+  const dateShort=new Intl.DateTimeFormat("de-DE",{weekday:"short",day:"2-digit",month:"2-digit"}).format(dDate).toUpperCase().replace(/\.,?/,"").replace(",","");
+  const sum=`<div class="sum${over?" over":""}"><span class="sum-l"><b class="hero-pct">${kFmt(tot)}</b>`+
+    (g?`<span class="hero-bar" aria-hidden="true">${bar(Math.min(tot,g),g,10)}</span>`:"")+`</span>`+
+    `<span class="sum-r">${g?`/ ${kFmt(g)} · ${over?`${kFmt(tot-g)} DRÜBER`:`${kFmt(g-tot)} ÜBRIG`}`:"KCAL · KEIN ZIEL"}</span></div>`;
+  // v3.6: Makros im Kopf, sobald Ziele gesetzt sind oder der Tag Makros enthält
+  const mgs=kMacGoals(), mac=kcalDayMacros(entries), mg=mgs||[null,null,null];
+  const showMac=!!mgs||mac.sum.some(v=>v>0);
+  const macHtml=showMac?`<div class="kmac">`+MAC_L.map((l,i)=>{
+      const v=mac.sum[i], gg=mg[i];
+      return `<div><span class="kml">${l}${mac.miss?"*":""}</span>`+
+        `<span class="kmv">${kFmtG(v)}${gg?`<small> / ${gg} g</small>`:"<small> g</small>"}</span>`+
+        (gg?`<span class="kmb" aria-hidden="true">${bar(Math.min(v,gg),gg,8)}</span>`:"")+`</div>`}).join("")+`</div>`:"";
+  const nav=periodNav({prev:"kcalDayNav(-1)",next:"kcalDayNav(1)",prevL:"Vorheriger Tag",nextL:"Nächster Tag",
+    label:isToday?"HEUTE":dDate.toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"}).toUpperCase(),
+    jump:isToday?"":"kcalDay=null;render()",jumpL:"ZU HEUTE"});
+  const search=`<div class="quickrow noswipe"><input id="kq" type="search" enterkeyhint="search" value="${esc(kcalQuery)}" placeholder="Lebensmittel suchen …" autocomplete="off" aria-label="Lebensmittel suchen" oninput="kcalSearchInput(this.value)">`+
+    `<button class="kqbtn" onclick="kcalOpenQuick()" aria-label="kcal direkt eintragen">+KCAL</button></div>`;
+  const list=`<div id="kres">${kcalPanel?kcalPanelHtml():kcalListHtml()}</div>`;
+  const rows=entries.length?entries.map(e=>
+    `<button class="tlrow" data-act="kcalEditEntry" data-id="${esc(e.id)}"><span class="tlname">${esc(e.n)}</span><span class="tlmeta">${kAmtTxt(e)}</span><span class="kkcal">${kFmt(e.kcal)}</span></button>`).join("")
+    :`<div class="hint">Noch nichts eingetragen.</div>`;
+  // letzte 7 Tage bis heute
+  const days=Array.from({length:7},(_,i)=>add(today(),i-6));
+  const totals=days.map(d=>kcalDayTotal(k(d)));
+  const ref=g||Math.max(1,...totals);
+  const logged=totals.filter(t=>t>0);
+  const avg=logged.length?Math.round(logged.reduce((a,b)=>a+b,0)/logged.length):0;
+  const week=days.map((d,i)=>{const key=k(d),t=totals[i];
+    return `<button class="kday${key===dk?" cur":""}${g&&t>g?" over":""}" onclick="kcalDayGo('${key}')" aria-label="${d.toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}: ${kFmt(t)} kcal">`+
+      `<span class="wlabel">${weekdays[d.getDay()]} ${pad(d.getDate())}</span><span class="wbar${t?"":" lv0"}" aria-hidden="true">${t?bar(Math.min(t,ref),ref,14):"·".repeat(14)}</span><span class="wpct">${t?kFmt(t):"–"}</span></button>`}).join("");
+  const own=kcal.foods.slice().sort((a,b)=>a.n.localeCompare(b.n,"de"));
+  const catLine=kcalCat?`${esc(kcalCat.source)} · ${kFmt(kcalCat.items.length)} Einträge · importiert ${new Date(kcalCat.imported).toLocaleDateString("de-DE")}`:"Kein Katalog importiert.";
+  const settings=`<details class="archive"${window._kcalSetOpen?" open":""} ontoggle="window._kcalSetOpen=this.open"><summary>EINSTELLUNGEN & KATALOG</summary>`+
+    `<div class="label">TAGESZIELE</div><div class="noswipe">`+
+      `<label class="field"><span class="flabel">KCAL</span><input id="kgoal" class="input" type="text" inputmode="numeric" autocomplete="off" value="${g||""}" placeholder="kein Ziel" oninput="kcalPctPreview()" onkeydown="if(event.key==='Enter'){event.preventDefault();kcalSaveGoal()}"></label>`+
+      `<div class="label" style="margin-top:var(--s3)">MAKROZIELE</div>`+
+      `<div class="seg">${[["pct","IN % DER KCAL"],["g","IN GRAMM"]].map(([m,l])=>`<button class="${kMacMode()===m?"sel":""}" aria-pressed="${kMacMode()===m}" onclick="kcalMacModeSet('${m}')">${l}</button>`).join("")}</div>`+
+      (kMacMode()==="pct"
+        ? `<div style="margin-top:var(--s3)">${kMacInputs("kg",kcal.mpct,"%","kcalPctPreview()")}</div><div class="kpctsum" id="kpctsum" aria-live="polite">${kcalPctPreviewText()}</div>`
+        : `<div style="margin-top:var(--s3)">${kMacInputs("kg",kcal.mgoal,"G")}</div>`)+
+      `<div class="ferr" id="kgerr" role="alert"></div>`+
+      `<button class="wide primary" onclick="kcalSaveGoal()">ZIELE SPEICHERN</button></div>`+
+    (kMacMode()==="g"&&kcal.mgoal&&kcal.mgoal.every(v=>v!=null)?`<div class="hint" style="margin-top:var(--s2)">Deine Makroziele ergeben ${kFmt(kcal.mgoal.reduce((s,v,i)=>s+v*MAC_KCAL[i],0))} kcal (4 / 9 / 4 kcal pro g).</div>`:"")+
+    (kMacMode()==="pct"?`<div class="hint" style="margin-top:var(--s2)">Die Gramm werden aus kcal-Ziel und Anteil berechnet (Eiweiß und Kohlenhydrate 4 kcal/g, Fett 9 kcal/g) und passen sich automatisch an, wenn du das kcal-Ziel oder die Verteilung änderst.</div>`:"")+
+    `<div class="hint" style="margin-top:var(--s2)">Leer lassen = kein Ziel. Die Ziele zählen nicht in die Tagesquote auf TODAY.</div>`+
+    `<div class="label">EIGENE LEBENSMITTEL · ${own.length}</div>`+
+    (own.length?own.map(f=>`<button class="tlrow" data-act="kcalEditFood" data-id="${esc(f.id)}"><span class="tlname">★ ${esc(f.n)}</span><span class="tlmeta">${kPerTxt(f)}</span></button>`).join(""):`<div class="hint" style="margin-top:0">Noch keine.</div>`)+
+    `<button class="wide secondary" onclick="kcalOpenFood(null,false)">+ EIGENES LEBENSMITTEL</button>`+
+    `<div class="label">KATALOG</div><div class="kcat">${catLine}</div>`+
+    (kcalCatMsg?`<div class="kmsg" role="status">${esc(kcalCatMsg)}</div>`:"")+
+    `<label class="wide secondary file">${kcalCat?"KATALOG ERSETZEN":"KATALOG IMPORTIEREN"}<input type="file" accept=".csv,.tsv,.txt,.json,text/csv,application/json" onchange="kcalImportCat(event)"></label>`+
+    (kcalCat?`<button class="wide danger" onclick="kcalRemoveCat()">KATALOG ENTFERNEN</button>`:"")+
+    `<div class="hint">Der Katalog liegt nur auf diesem Gerät, nicht auf GitHub. Er ist im Backup (HABITS → DATEN EXPORTIEREN) enthalten. Akzeptiert werden CSV mit Spalten für Name und kcal pro 100 g oder JSON.${kcalCat?" Datenbasis: "+esc(kcalCat.source)+".":""}</div>`+
+    `</details>`;
+  const missNote=showMac&&mac.miss?`<div class="hint">* ${mac.miss} ${mac.miss===1?"Eintrag hat":"Einträge haben"} keine vollständigen Makroangaben – die Makro-Summen oben sind daher zu niedrig.</div>`:"";
+  return `<main>${header("KCAL",dateShort,"",sum+macHtml)}${nav}${search}${list}`+
+    `<div class="section-title">${isToday?"HEUTE":"EINTRÄGE"} · ${entries.length}</div>${rows}${missNote}`+
+    `<div class="section-title">LETZTE 7 TAGE${avg?` · Ø ${kFmt(avg)}`:""}</div><div class="weekrows">${week}</div>`+
+    settings+`</main>`;
+}
+
+/* ── Aktionen ── */
+function kcalSearchInput(v){
+  kcalQuery=v;
+  kcalPanel=null;                                   // Tippen schließt ein offenes Feld
+  const box=document.getElementById("kres");
+  if(box)box.innerHTML=kcalListHtml();              // nur die Liste, damit der Fokus bleibt
+}
+function kcalFocus(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  try{el.focus({preventScroll:true})}catch(e){el.focus()}
+  try{el.select()}catch(e){}
+  const p=document.querySelector(".kpanel"); if(p&&p.scrollIntoView)p.scrollIntoView({block:"nearest"});
+}
+function kcalPick(id){
+  id=String(id||"");
+  let food=null,amt=null;
+  if(id.startsWith("f:")){const f=kcal.foods.find(x=>x.id===id.slice(2));if(f)food={n:f.n,per:f.per,unit:f.unit,pg:f.pg,m:f.m,src:"f"}}
+  else if(id.startsWith("c:")&&kcalCat){const it=kcalCat.items[Number(id.slice(2))];if(it)food={n:it[0],per:it[1],unit:"g",m:kMac(it.slice(2,5),100),src:"c"}}
+  else if(id.startsWith("e:")){const e=kcal.log.find(x=>x.id===id.slice(2));if(e&&e.per!=null){
+    const f=kcal.foods.find(x=>x.n===e.n&&x.unit===e.unit);
+    food={n:e.n,per:e.per,unit:e.unit,pg:f&&f.per===e.per?f.pg:undefined,m:e.m,src:e.src};amt=e.amt}}
+  if(!food)return;
+  kcalPanel={kind:"amt",food,amt:amt!=null?amt:(food.unit==="g"?(food.pg||100):1)};
+  render();kcalFocus("kamt");
+}
+function kcalSetAmt(v){const el=document.getElementById("kamt");if(el){el.value=kFmtAmt(v);kcalPreview()}}
+function kcalPreview(){
+  const el=document.getElementById("kamt"),out=document.getElementById("kprev");
+  if(!el||!out||!kcalPanel||kcalPanel.kind!=="amt")return;
+  const a=kNum(el.value);
+  out.textContent=a>0?`= ${kFmt(kCalc(kcalPanel.food.per,kcalPanel.food.unit,a))} kcal`:"= – kcal";
+  const om=document.getElementById("kprevm"), f=kcalPanel.food;
+  if(om&&f.m)om.textContent=a>0?kMacTxt(kMacScale(f.m,f.unit,a)):"";
+}
+function kcalErr(msg,fieldId){
+  const er=document.getElementById("kerr"); if(er)er.textContent=msg;
+  const f=fieldId&&document.getElementById(fieldId); if(f){f.setAttribute("aria-invalid","true");f.focus()}
+}
+function kcalCommit(){
+  const p=kcalPanel; if(!p||p.kind!=="amt")return;
+  const a=kNum((document.getElementById("kamt")||{}).value);
+  if(!(a>0)||a>100000)return kcalErr("Bitte eine Menge größer als 0 eingeben.","kamt");
+  const kc=kCalc(p.food.per,p.food.unit,a);
+  if(p.editId){
+    const e=kcal.log.find(x=>x.id===p.editId); if(e){e.amt=a;e.kcal=kc}
+  }else{
+    const e={id:uid(),d:kcalDayKey(),t:new Date().toISOString(),n:p.food.n,unit:p.food.unit,amt:a,per:p.food.per,kcal:kc};
+    if(p.food.src)e.src=p.food.src;
+    if(p.food.m)e.m=p.food.m.slice();                 // Makros pro Basis, wie kcal
+    kcal.log.push(e);
+  }
+  kcalPanel=null;kcalQuery="";saveKcal();render();
+}
+function kcalOpenQuick(){kcalPanel={kind:"quick"};render();kcalFocus("kqk")}
+function kcalCommitQuick(){
+  const p=kcalPanel; if(!p||p.kind!=="quick")return;
+  const kc=kNum((document.getElementById("kqk")||{}).value);
+  if(!(kc>0)||kc>50000)return kcalErr("Bitte eine kcal-Zahl größer als 0 eingeben.","kqk");
+  const n=String((document.getElementById("kqn")||{}).value||"").trim().slice(0,120)||"Direkteintrag";
+  const m=kReadMac("kq",5000);
+  if(p.editId){
+    const e=kcal.log.find(x=>x.id===p.editId); if(e){e.n=n;e.amt=Math.round(kc);e.kcal=Math.round(kc);if(m)e.m=m;else delete e.m}
+  }else{
+    const e={id:uid(),d:kcalDayKey(),t:new Date().toISOString(),n,unit:"kcal",amt:Math.round(kc),per:null,kcal:Math.round(kc)};
+    if(m)e.m=m;
+    kcal.log.push(e);
+  }
+  kcalPanel=null;saveKcal();render();
+}
+function kcalEditEntry(id){
+  const e=kcal.log.find(x=>x.id===id); if(!e)return;
+  if(e.unit==="kcal"||e.per==null){kcalPanel={kind:"quick",editId:e.id,n:e.n,kcal:e.kcal,m:e.m};render();kcalFocus("kqk");return}
+  kcalPanel={kind:"amt",editId:e.id,food:{n:e.n,per:e.per,unit:e.unit,m:e.m},amt:e.amt};
+  render();kcalFocus("kamt");
+}
+function kcalDeleteEntry(){
+  const p=kcalPanel; if(!p||!p.editId)return;
+  if(!confirm("Eintrag löschen?"))return;
+  kcal.log=kcal.log.filter(x=>x.id!==p.editId);
+  kcalPanel=null;saveKcal();render();
+}
+function kcalClosePanel(){kcalPanel=null;render()}
+function kcalOpenFood(id,fromSearch){
+  const f=id?kcal.foods.find(x=>x.id===id):null;
+  kcalPanel=f?{kind:"food",id:f.id,n:f.n,per:f.per,unit:f.unit,pg:f.pg,m:f.m}
+             :{kind:"food",n:fromSearch?kcalQuery.trim().slice(0,120):"",unit:"g",fromSearch:!!fromSearch};
+  window._kcalSetOpen=window._kcalSetOpen||(!fromSearch&&!f?true:window._kcalSetOpen);
+  render();window.scrollTo(0,0);kcalFocus(f||fromSearch?"kfp":"kfn");
+}
+function kcalEditFood(id){kcalOpenFood(id,false)}
+function kcalReadFoodForm(){
+  const p=kcalPanel;
+  p.n=String((document.getElementById("kfn")||{}).value||"");
+  const per=kNum((document.getElementById("kfp")||{}).value); p.per=isFinite(per)?per:null;
+  const pgEl=document.getElementById("kfg"); if(pgEl){const pg=kNum(pgEl.value);p.pg=pg>0?Math.round(pg):undefined}
+  p.m=["p","f","c"].map(s=>{const el=document.getElementById("km"+s);const v=el?kNum(el.value):NaN;return v>=0?v:null});
+}
+function kcalFoodUnit(u){if(!kcalPanel||kcalPanel.kind!=="food")return;kcalReadFoodForm();kcalPanel.unit=u;render();kcalFocus("kfp")}
+function kcalSaveFood(){
+  const p=kcalPanel; if(!p||p.kind!=="food")return;
+  kcalReadFoodForm();
+  const n=p.n.trim().slice(0,120);
+  if(!n)return kcalErr("Bitte einen Namen eingeben.","kfn");
+  const maxM=p.unit==="stk"?2000:100;
+  if(p.m&&p.m.some(v=>v!=null&&v>maxM))return kcalErr(`Makros dürfen höchstens ${maxM} g ${p.unit==="stk"?"pro Stück":"pro 100 g"} betragen.`,"kfp");
+  if(p.per==null&&p.m&&p.m.every(v=>v!=null))p.per=Math.round(p.m.reduce((s,v,i)=>s+v*MAC_KCAL[i],0));   // kcal aus Makros
+  if(!(p.per>=0)||p.per>20000)return kcalErr(`Bitte die kcal ${p.unit==="stk"?"pro Stück":"pro 100 g"} eingeben – oder alle drei Makros.`,"kfp");
+  const food={id:p.id||uid(),n,per:Math.round(p.per*10)/10,unit:p.unit==="stk"?"stk":"g"};
+  if(food.unit==="g"&&p.pg>0&&p.pg<=5000)food.pg=p.pg;
+  const fm=kMac(p.m,maxM); if(fm)food.m=fm;
+  const i=kcal.foods.findIndex(x=>x.id===food.id);
+  // v3.6: bekommt ein Lebensmittel neu Makros, alte Einträge ohne Makros auf Nachfrage ergänzen
+  // (nur bei gleicher Basis, damit kcal und Makros zusammenpassen)
+  if(i>=0&&food.m){
+    const prev=kcal.foods[i];
+    const olds=kcal.log.filter(e=>!e.m&&e.n===prev.n&&e.unit===food.unit&&e.per===food.per);
+    if(olds.length&&confirm(`${olds.length} bisherige${olds.length===1?"r Eintrag":" Einträge"} von „${prev.n}“ ohne Makros. Makros dort ergänzen?`))
+      olds.forEach(e=>{e.m=food.m.slice()});
+  }
+  if(i>=0)kcal.foods[i]=food;else kcal.foods.push(food);
+  saveKcal();
+  if(p.fromSearch){                                 // neu aus der Suche: gleich die Menge abfragen
+    kcalQuery="";kcalPanel={kind:"amt",food:{n:food.n,per:food.per,unit:food.unit,pg:food.pg,m:food.m,src:"f"},amt:food.unit==="g"?(food.pg||100):1};
+    render();kcalFocus("kamt");return;
+  }
+  kcalPanel=null;render();
+}
+function kcalDeleteFood(){
+  const p=kcalPanel; if(!p||!p.id)return;
+  if(!confirm("Eigenes Lebensmittel löschen? Bereits eingetragene Mahlzeiten bleiben erhalten."))return;
+  kcal.foods=kcal.foods.filter(x=>x.id!==p.id);
+  kcalPanel=null;saveKcal();render();
+}
+/* v3.7: Live-Vorschau der %-Verteilung (ohne Neuzeichnen, Fokus bleibt) */
+function kcalPctRead(){
+  const gv=kNum((document.getElementById("kgoal")||{}).value);
+  const pc=["p","f","c"].map(x=>{const el=document.getElementById("kg"+x);return el?kNum(el.value):NaN});
+  return {goal:gv>0?Math.round(gv):null,pc};
+}
+function kcalPctPreviewText(st){
+  const {goal,pc}=st||{goal:kcal.goal,pc:kcal.mpct||[NaN,NaN,NaN]};
+  if(!pc.some(v=>v>=0))return "Anteile eingeben, z. B. 30 / 30 / 40.";
+  const sum=pc.reduce((a,v)=>a+(v>=0?v:0),0);
+  const sumTxt=`Summe ${kFmtAmt(sum)} %${Math.round(sum)!==100?" – sollte 100 % sein":""}`;
+  if(!goal)return `${sumTxt} · Für Gramm-Werte ein kcal-Ziel eingeben.`;
+  return `${sumTxt} → `+kPctToG(goal,pc.map(v=>v>=0?v:0)).map((v,i)=>`${MAC_S[i]} ${v} g`).join(" · ");
+}
+function kcalPctPreview(){
+  const el=document.getElementById("kpctsum"); if(!el)return;
+  const st=kcalPctRead();
+  el.textContent=kcalPctPreviewText(st);
+  const sum=st.pc.reduce((a,v)=>a+(v>=0?v:0),0);
+  el.classList.toggle("bad",st.pc.some(v=>v>=0)&&Math.round(sum)!==100);
+}
+/* Moduswechsel übernimmt die bisherigen Ziele umgerechnet */
+function kcalMacModeSet(m){
+  if(kMacMode()===m)return;
+  const gv=kNum((document.getElementById("kgoal")||{}).value);
+  if(gv>0)kcal.goal=Math.min(20000,Math.round(gv));
+  if(m==="pct"){
+    const cur=kcal.mgoal; if(cur&&cur.every(v=>v!=null)){const pc=kGToPct(cur);if(pc)kcal.mpct=pc}
+  }else{
+    const gg=kMacGoals(); if(gg)kcal.mgoal=gg;
+  }
+  kcal.mmode=m;saveKcal();render();
+}
+function kcalSaveGoal(){
+  const v=String((document.getElementById("kgoal")||{}).value||"").trim();
+  const g=kNum(v);
+  const err=msg=>{const e=document.getElementById("kgerr");if(e)e.textContent=msg};
+  const goal=(v===""||!(g>0))?null:Math.min(20000,Math.round(g));
+  if(kMacMode()==="pct"){
+    const pc=["p","f","c"].map(x=>{const el=document.getElementById("kg"+x);const t=el?el.value.trim():"";return t===""?null:kNum(t)});
+    if(pc.every(x=>x==null)){delete kcal.mpct}
+    else{
+      if(pc.some(x=>!(x>=0)||x>100))return err("Bitte alle drei Anteile zwischen 0 und 100 % eingeben.");
+      const sum=pc.reduce((a,b)=>a+b,0);
+      if(Math.round(sum)!==100)return err(`Die Anteile ergeben ${kFmtAmt(sum)} %, bitte auf 100 % bringen.`);
+      if(!goal)return err("Für die %-Verteilung braucht es ein kcal-Ziel.");
+      kcal.mpct=pc.map(x=>Math.round(x*10)/10);
+    }
+    kcal.mmode="pct";
+  }else{
+    const mg=kReadMac("kg",2000);                    // v3.6: Makroziele in g pro Tag
+    if(mg&&mg.some(x=>x>0))kcal.mgoal=mg.map(x=>x>0?Math.round(x):null);else delete kcal.mgoal;
+    kcal.mmode="g";
+  }
+  kcal.goal=goal;
+  saveKcal();render();
+}
+function kcalDayNav(n){
+  const d=add(kcalDay||today(),n);
+  kcalDay=(k(d)>=k(today()))?null:d;                // nie in die Zukunft; "heute" folgt dem Datum
+  kcalPanel=null;render();
+}
+function kcalDayGo(key){
+  if(!isValidDateKey(key))return;
+  kcalDay=(key>=k(today()))?null:parse(key);
+  kcalPanel=null;render();window.scrollTo(0,0);
+}
+
+/* ── Katalog-Import: CSV (Komma, Semikolon oder Tab) oder JSON ── */
+function kcalParseCsv(txt){
+  const lines=txt.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)throw{userMsg:"Die Datei enthält keine Datenzeilen."};
+  const h=lines[0];
+  const cnt=c=>h.split(c).length;
+  const delim=[";","\t",","].reduce((best,c)=>cnt(c)>cnt(best)?c:best,",");
+  const split=line=>{                                // CSV-Zeile mit Anführungszeichen
+    const out=[];let cur="",q=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(q){if(ch==='"'){if(line[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}
+      else if(ch==='"')q=true;
+      else if(ch===delim){out.push(cur);cur=""}
+      else cur+=ch;
+    }
+    out.push(cur);return out.map(s=>s.trim());
+  };
+  const head=split(h), hf=head.map(kFold);
+  const kcalCol=hf.findIndex(x=>/kcal|kilokalorie/.test(x));
+  let nameCol=hf.findIndex(x=>/bezeichnung|lebensmittel|^name|name.*de|deutsch/.test(x)&&!/engl|english/.test(x));
+  if(nameCol<0)nameCol=hf.findIndex(x=>/name|text|food/.test(x));
+  if(kcalCol<0||nameCol<0)throw{userMsg:`Spalten für Name und kcal nicht erkannt. Gefunden: ${head.slice(0,8).join(" | ").slice(0,200)}`};
+  // v3.6: Makro-Spalten (optional) — Eiweiß, Fett, Kohlenhydrate (bevorzugt "verfügbar")
+  const pCol=hf.findIndex(x=>/protein|eiweiss/.test(x)&&!/kj|kcal/.test(x));
+  const fCol=hf.findIndex(x=>/(^|[^a-z])(fett|fat|lipid)/.test(x)&&!/saure|acid|frei|kj|kcal/.test(x));
+  const cAll=hf.map((x,i)=>/kohlenhydrat|carbohydrate/.test(x)&&!/ballast|fib|kj|kcal/.test(x)?i:-1).filter(i=>i>=0);
+  const cCol=cAll.find(i=>/verfugbar|available/.test(hf[i]))??(cAll.length?cAll[0]:-1);
+  const macCols=[pCol,fCol,cCol];
+  const items=[];
+  for(let i=1;i<lines.length&&items.length<KCAL_MAX_CAT;i++){
+    const c=split(lines[i]);
+    const n=c[nameCol], v=kNum(c[kcalCol]);
+    if(n&&v>=0&&v<=1000)items.push([n,v,...macCols.map(ci=>ci>=0?kNum(c[ci]):null)]);
+  }
+  return {items,col:head[kcalCol],macCols:macCols.map(ci=>ci>=0?head[ci]:null)};
+}
+function kcalParseJson(j){
+  if(j&&!Array.isArray(j)&&Array.isArray(j.items))return {items:j.items,source:j.source};
+  const arr=Array.isArray(j)?j:(j&&Array.isArray(j.foods)?j.foods:null);
+  if(!arr)throw{userMsg:"JSON ohne erkennbare Lebensmittelliste."};
+  return {items:arr.map(o=>Array.isArray(o)?o:[o&&(o.n??o.name??o.bezeichnung),o&&(o.kcal??o.per??o.energie_kcal),
+    o&&(o.p??o.protein??o.eiweiss),o&&(o.f??o.fat??o.fett),o&&(o.c??o.carbs??o.kh??o.kohlenhydrate)])};
+}
+function kcalImportCat(e){
+  const file=e.target.files&&e.target.files[0]; if(!file)return;
+  const finish=txt=>{
+    let res=null,source=file.name.replace(/\.[^.]+$/,"").slice(0,80);
+    try{
+      txt=String(txt).replace(/^\uFEFF/,"");
+      res=/^\s*[\[{]/.test(txt)?kcalParseJson(JSON.parse(txt)):kcalParseCsv(txt);
+      if(res.source)source=String(res.source);
+    }catch(err){kcalCatMsg="Import fehlgeschlagen: "+((err&&err.userMsg)||"Datei nicht lesbar.");render();return}
+    const next=normalizeCat({source,imported:new Date().toISOString(),items:res.items});
+    if(!next){kcalCatMsg="Import fehlgeschlagen: keine gültigen Einträge mit kcal gefunden.";render();return}
+    if(!putStore(KCKEY,next)){
+      kcalCatMsg="Import fehlgeschlagen: Der Speicher des Browsers ist voll.";
+      if(kcalCat)putStore(KCKEY,kcalCat);else{try{localStorage.removeItem(KCKEY)}catch(x){}delete MEM[KCKEY]}
+      storageFailed=false;                            // nur der Katalog passte nicht, sonst ist alles gespeichert
+      render();return;
+    }
+    setKcalCat(next);
+    const withMac=next.items.filter(it=>it.length>2).length;
+    kcalCatMsg=`${kFmt(next.items.length)} Einträge importiert${res.col?` (kcal aus Spalte „${res.col}“)`:""}. `+
+      (res.macCols?(res.macCols.some(Boolean)?`Makros: ${MAC_L.map((l,i)=>`${l} ${res.macCols[i]?`„${res.macCols[i]}“`:"nicht gefunden"}`).join(", ")}. `:"Keine Makro-Spalten gefunden. "):"")+
+      `${kFmt(withMac)} Einträge mit Makros.`;
+    window._kcalSetOpen=true;render();
+  };
+  // Erst UTF-8 versuchen; enthält das Ergebnis Ersatzzeichen, als Windows-1252 neu lesen (Umlaute aus Excel-CSV)
+  const r=new FileReader();
+  r.onload=()=>{
+    const t=String(r.result);
+    if(t.includes("\uFFFD")){const r2=new FileReader();r2.onload=()=>finish(r2.result);r2.readAsText(file,"windows-1252")}
+    else finish(t);
+  };
+  r.readAsText(file,"utf-8");
+}
+function kcalRemoveCat(){
+  if(!confirm("Katalog von diesem Gerät entfernen? Eigene Lebensmittel und Einträge bleiben erhalten."))return;
+  setKcalCat(null);kcalCatMsg="Katalog entfernt.";
+  try{localStorage.removeItem(KCKEY)}catch(e){}
+  delete MEM[KCKEY];
+  render();
+}
+
+Object.assign(ACTIONS,{
+  kcalPick:      id=>kcalPick(id),
+  kcalEditEntry: id=>kcalEditEntry(id),
+  kcalEditFood:  id=>kcalEditFood(id)
+});
+
 /* ══════════════════════════════════════════════════════════════════
    11. START
    Ausführung beim Laden: Migration, ID-Prüfung, Timer, erstes Rendern.
